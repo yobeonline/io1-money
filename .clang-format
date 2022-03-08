@@ -1,0 +1,18 @@
+﻿---
+BasedOnStyle: LLVM
+AllowShortBlocksOnASingleLine: 'true'
+AllowShortCaseLabelsOnASingleLine: 'true'
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Always
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: 'true'
+AlwaysBreakTemplateDeclarations: 'Yes'
+BreakBeforeBraces: Allman
+ColumnLimit: '120'
+CompactNamespaces: 'true'
+NamespaceIndentation: All
+PointerAlignment: Middle
+TabWidth: '2'
+UseTab: Never
+
+...
