@@ -1,0 +1,30 @@
+name: unit tests
+on: [push]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+
+      - name: Get latest cmake
+        uses: lukka/get-cmake@latest
+
+      - name: Configure
+        run: cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake -B Release -S .
+        env:
+          CXX: g++-10
+          CC: gcc-10
+
+      - name: Build
+        run: cmake --build Release --config Release --parallel
+
+      - name: Execute
+        run: cmake --build Release --target test
+
+      - name: Publish test report
+        uses: mikepenz/action-junit-report@v3
+        with:
+          report_paths: 'Release/bin/junit_*.xml'

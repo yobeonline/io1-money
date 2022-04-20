@@ -2,6 +2,6 @@
   "name": "money",
   "version-string": "latest",
   "dependencies": [
-    "boost-core"
+    "boost-test"
   ]
 }
