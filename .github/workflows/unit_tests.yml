@@ -4,6 +4,9 @@ on: [push]
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        config: [Release, Debug]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -13,18 +16,18 @@ jobs:
         uses: lukka/get-cmake@latest
 
       - name: Configure
-        run: cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake -B Release -S .
+        run: cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake -B build -S .
         env:
           CXX: g++-10
           CC: gcc-10
 
       - name: Build
-        run: cmake --build Release --config Release --parallel
+        run: cmake --build build --config ${{ matrix.config }} --parallel
 
       - name: Execute
-        run: cmake --build Release --target test
+        run: cmake --build build --target test
 
       - name: Publish test report
         uses: mikepenz/action-junit-report@v3
         with:
-          report_paths: 'Release/bin/junit_*.xml'
+          report_paths: 'build/bin/junit_*.xml'
