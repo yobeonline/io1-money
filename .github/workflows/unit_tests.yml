@@ -15,6 +15,9 @@ jobs:
       - name: Get latest cmake
         uses: lukka/get-cmake@latest
 
+      - name: Trying to restore vcpkg dependencies
+        uses: lukka/run-vcpkg@v10
+
       - name: Configure
         run: cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake -B build -S .
         env:
