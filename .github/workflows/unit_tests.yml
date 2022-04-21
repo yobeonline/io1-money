@@ -16,18 +16,18 @@ jobs:
         uses: lukka/get-cmake@latest
 
       - name: Configure
-        run: cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake -B build -S .
+        run: cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake -B build/${{ matrix.config }} -S .
         env:
           CXX: g++-10
           CC: gcc-10
 
       - name: Build
-        run: cmake --build build --config ${{ matrix.config }} --parallel
+        run: cmake --build build/${{ matrix.config }} --config ${{ matrix.config }} --parallel
 
       - name: Execute
-        run: cmake --build build --target test
+        run: cmake --build build/${{ matrix.config }} --target test
 
       - name: Publish test report
         uses: mikepenz/action-junit-report@v3
         with:
-          report_paths: 'build/bin/junit_*.xml'
+          report_paths: 'build/${{ matrix.config }}/bin/junit_*.xml'
