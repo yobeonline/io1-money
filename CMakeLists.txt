@@ -18,10 +18,10 @@ target_include_directories(${PROJECT_NAME} INTERFACE include)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
 
 if(BUILD_TESTING)
-  find_package(Boost REQUIRED)
+  find_package(Boost REQUIRED COMPONENTS unit_test_framework)
   add_executable(test_${PROJECT_NAME} test/test_money.cpp test/tutorial.cpp)
   target_link_libraries(test_${PROJECT_NAME} PRIVATE ${PROJECT_NAME}
-                                                     Boost::boost)
+                                                     Boost::unit_test_framework)
 
   add_test(
     NAME test_${PROJECT_NAME}

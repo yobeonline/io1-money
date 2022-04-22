@@ -6,7 +6,7 @@
 #include <utility>
 
 #define BOOST_TEST_MODULE io1::Money test
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 #include <boost/type_traits/is_detected.hpp>
 
 BOOST_AUTO_TEST_CASE(Bounds)
