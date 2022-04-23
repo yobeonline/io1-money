@@ -65,8 +65,8 @@ BOOST_AUTO_TEST_CASE(Tutorial)
   cout << installments_nb << " payments:";
   for (auto const & amount : payment_plan) cout << ' ' << put_money(amount);
 
-  BOOST_REQUIRE_EQUAL(std::accumulate(payment_plan.begin(), payment_plan.end(), 0_money), final_price);
-  BOOST_REQUIRE_EQUAL(cout.str(), "Total: $26.92\n5 payments: $5.39 $5.39 $5.38 $5.38 $5.38");
+  BOOST_CHECK_EQUAL(std::accumulate(payment_plan.begin(), payment_plan.end(), 0_money), final_price);
+  BOOST_CHECK_EQUAL(cout.str(), "Total: $26.92\n5 payments: $5.39 $5.39 $5.38 $5.38 $5.38");
 
   return;
 }
