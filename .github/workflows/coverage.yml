@@ -19,8 +19,8 @@ jobs:
 
       - name: Configure
         env:
-          CXXFLAGS: --coverage
-          CFLAGS: --coverage
+          CXXFLAGS: --coverage -O0
+          CFLAGS: --coverage -O0
           LDFLAGS: --coverage
         run: cmake --toolchain ../vcpkg/scripts/buildsystems/vcpkg.cmake -B build -S .
 
@@ -43,4 +43,4 @@ jobs:
         with:
           path: build/bin/coverage.xml
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          minimum_coverage: 89
+          minimum_coverage: 80
