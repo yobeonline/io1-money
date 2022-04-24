@@ -146,8 +146,14 @@ namespace io1
     return *this;
   }
 
-  [[nodiscard]] inline constexpr Money operator+(Money lhs, Money rhs) noexcept { return lhs += rhs; };
-  [[nodiscard]] inline constexpr Money operator-(Money lhs, Money rhs) noexcept { return lhs -= rhs; };
+  [[nodiscard]] inline constexpr Money operator+(Money lhs, Money rhs) noexcept
+  {
+    return lhs += rhs;
+  };
+  [[nodiscard]] inline constexpr Money operator-(Money lhs, Money rhs) noexcept
+  {
+    return lhs -= rhs;
+  };
 
   template <std::integral T>
   [[nodiscard]] constexpr Money operator*(Money lhs, T rhs) noexcept
@@ -161,7 +167,10 @@ namespace io1
     return rhs *= lhs;
   };
 
-  [[nodiscard]] inline Money operator*(long double lhs, Money rhs) noexcept { return rhs *= lhs; };
+  [[nodiscard]] inline Money operator*(long double lhs, Money rhs) noexcept
+  {
+    return rhs *= lhs;
+  };
 
   template <std::integral T>
   [[nodiscard]] constexpr Money operator/(Money lhs, T rhs)
@@ -169,7 +178,10 @@ namespace io1
     return lhs /= rhs;
   };
 
-  [[nodiscard]] inline Money operator/(Money lhs, long double rhs) noexcept { return lhs /= rhs; };
+  [[nodiscard]] inline Money operator/(Money lhs, long double rhs) noexcept
+  {
+    return lhs /= rhs;
+  };
 
   // Helper structure to build a io1::Money object from a user-defined string litteral
   struct Money::StringLitteralDecoder
@@ -206,7 +218,8 @@ namespace io1
     template <value_type CURRENT_MANTISSA, char DIGIT, char... STR>
     constexpr static value_type parse_mantissa(void) noexcept
     {
-      constexpr auto new_mantissa = []() {
+      constexpr auto new_mantissa = []()
+      {
         if constexpr (not_a_digit<DIGIT>()) return CURRENT_MANTISSA;
         else
           return parse_digit<CURRENT_MANTISSA, DIGIT>();
@@ -218,7 +231,10 @@ namespace io1
     };
   };
 
-  inline std::ostream & operator<<(std::ostream & stream, io1::Money m) noexcept { return stream << m.data(); };
+  inline std::ostream & operator<<(std::ostream & stream, io1::Money m) noexcept
+  {
+    return stream << m.data();
+  };
   inline std::istream & operator>>(std::istream & stream, io1::Money & m)
   {
     io1::Money::value_type amount;

@@ -568,9 +568,9 @@ BOOST_AUTO_TEST_CASE(Format)
   std::stringstream stream;
   stream.imbue(std::locale(stream.getloc(), std::make_unique<moneypunct_facet>().release()));
 
-  BOOST_CHECK_NO_THROW(stream << put_money(1.5_money) << ' ' << put_money(-1.5_money) << ' '
-                                << put_money(-123456_money) << ' ' << put_money(123456_money) << ' '
-                                << put_money(-123.456_money) << ' ' << put_money(123.456_money));
+  BOOST_CHECK_NO_THROW(stream << put_money(1.5_money) << ' ' << put_money(-1.5_money) << ' ' << put_money(-123456_money)
+                              << ' ' << put_money(123456_money) << ' ' << put_money(-123.456_money) << ' '
+                              << put_money(123.456_money));
   BOOST_CHECK_EQUAL("+ 1_5+ - 1_5- - 1-23-45_6- + 1-23-45_6+ - 1-23-45_6- + 1-23-45_6+", stream.str());
 
   return;
@@ -580,7 +580,8 @@ BOOST_AUTO_TEST_CASE(FormatLeadingZero)
 {
   // gcc is not displaying the leading zero in 0.1 (i prints .1) so both outputs are valid.
   auto is_either = [](std::string_view ref1, std::string_view ref2,
-                      std::string_view result) -> boost::test_tools::predicate_result {
+                      std::string_view result) -> boost::test_tools::predicate_result
+  {
     if (result == ref1 || result == ref2) return true;
 
     boost::test_tools::predicate_result res(false);
@@ -593,7 +594,7 @@ BOOST_AUTO_TEST_CASE(FormatLeadingZero)
   stream.imbue(std::locale(stream.getloc(), std::make_unique<moneypunct_facet>().release()));
 
   BOOST_CHECK_NO_THROW(stream << put_money(0_money) << ' ' << put_money(-0_money) << ' ' << put_money(1_money) << ' '
-                                << put_money(-1_money) << ' ' << put_money(-0.1_money) << ' ' << put_money(0.1_money));
+                              << put_money(-1_money) << ' ' << put_money(-0.1_money) << ' ' << put_money(0.1_money));
   BOOST_TEST_CHECK(
       is_either("+ _0+ + _0+ + _1+ - _1- - _1- + _1+", "+ 0_0+ + 0_0+ + 0_1+ - 0_1- - 0_1- + 0_1+", stream.str()));
 

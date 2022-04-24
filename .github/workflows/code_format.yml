@@ -1,0 +1,25 @@
+name: code format
+on: [push]
+
+jobs:
+  cmake-format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Format CMake files
+        uses: PuneetMatharu/cmake-format-lint-action@v1.0.1
+        with:
+          args: --config-files .cmake-format.json --check
+
+  clang-format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Run clang-format style check for C/C++/Protobuf programs.
+        uses: jidicula/clang-format-action@v4.5.0
+        with:
+          clang-format-version: '14'
