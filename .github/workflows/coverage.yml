@@ -1,0 +1,46 @@
+name: code coverage
+on: [push]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+
+      - name: Get latest cmake
+        uses: lukka/get-cmake@latest
+
+      - name: set compiler
+        run: |
+          echo "CXX=g++-10" >> $GITHUB_ENV
+          echo "CC=gcc-10" >> $GITHUB_ENV
+
+      - name: Configure
+        env:
+          CXXFLAGS:--coverage
+          CFLAGS:--coverage
+          LDFLAGS:--coverage
+        run: cmake --toolchain ../vcpkg/scripts/buildsystems/vcpkg.cmake -B build -S .
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Execute
+        run: cmake --build build --target test
+
+      - name: Install gcovr
+        run: |
+          sudo apt-get update
+          sudo apt-get install -yq gcovr
+          sudo apt-get clean
+
+      - name: Create report
+        run: gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o build/bin/coverage.xml --root . --object-directory build
+
+      - uses: 5monkeys/cobertura-action@master
+        with:
+          path: build/bin/coverage.xml
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          minimum_coverage: 89
