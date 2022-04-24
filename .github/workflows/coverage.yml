@@ -37,7 +37,7 @@ jobs:
           sudo apt-get clean
 
       - name: Create report
-        run: gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o build/bin/coverage.xml --root . --object-directory build
+        run: gcovr --xml-pretty --filter include/money.hpp --exclude-unreachable-branches --print-summary -o build/bin/coverage.xml --root . --object-directory build
 
       - uses: 5monkeys/cobertura-action@master
         with:
