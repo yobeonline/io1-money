@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.18)
 
-project(money)
+project(
+  money
+  VERSION 0.1.0
+  DESCRIPTION
+    "A class to store money amounts for personal accounting applications."
+  HOMEPAGE_URL "https://github.com/yobeonline/money")
 
 add_library(${PROJECT_NAME} INTERFACE) # include/money.hpp)
 target_include_directories(${PROJECT_NAME} INTERFACE include)
