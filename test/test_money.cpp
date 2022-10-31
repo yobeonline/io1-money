@@ -11,92 +11,92 @@
 
 BOOST_AUTO_TEST_CASE(Bounds)
 {
-  constexpr auto max = 9'223'372'036'854'775'807_money;
-  constexpr auto min = -9'223'372'036'854'775'807_money - 1_money;
+  [[maybe_unused]] constexpr auto max = 9'223'372'036'854'775'807_money;
+  [[maybe_unused]] constexpr auto min = -9'223'372'036'854'775'807_money - 1_money;
 }
 
 BOOST_AUTO_TEST_CASE(Constexpr)
 {
   {
-    constexpr io1::Money m(1_money);
+    [[maybe_unused]] constexpr io1::Money m(1_money);
   }
   {
-    constexpr io1::Money m = 1_money;
+    [[maybe_unused]] constexpr io1::Money m = 1_money;
   }
   {
-    constexpr auto m = 1_money ++;
+    [[maybe_unused]] constexpr auto m = 1_money ++;
   }
   {
-    constexpr auto m = ++1_money;
+    [[maybe_unused]] constexpr auto m = ++1_money;
   }
   {
-    constexpr auto m = 1_money --;
+    [[maybe_unused]] constexpr auto m = 1_money --;
   }
   {
-    constexpr auto m = --1_money;
+    [[maybe_unused]] constexpr auto m = --1_money;
   }
   {
-    constexpr auto m = 1_money *= 2;
+    [[maybe_unused]] constexpr auto m = 1_money *= 2;
   }
   {
-    constexpr auto m = 10_money /= 2;
+    [[maybe_unused]] constexpr auto m = 10_money /= 2;
   }
   {
-    constexpr auto m = 1_money += 2_money;
+    [[maybe_unused]] constexpr auto m = 1_money += 2_money;
   }
   {
-    constexpr auto m = 1_money -= 2_money;
+    [[maybe_unused]] constexpr auto m = 1_money -= 2_money;
   }
   {
-    constexpr auto m = -1_money;
+    [[maybe_unused]] constexpr auto m = -1_money;
   }
   {
-    constexpr auto m = -1_money;
+    [[maybe_unused]] constexpr auto m = -1_money;
   }
   {
-    constexpr auto m = 1_money + 2_money;
+    [[maybe_unused]] constexpr auto m = 1_money + 2_money;
   }
   {
-    constexpr auto m = -1_money + 2_money;
+    [[maybe_unused]] constexpr auto m = -1_money + 2_money;
   }
   {
-    constexpr auto m = 1_money - 2_money;
+    [[maybe_unused]] constexpr auto m = 1_money - 2_money;
   }
   {
-    constexpr auto m = 1_money * 2;
+    [[maybe_unused]] constexpr auto m = 1_money * 2;
   }
   {
-    constexpr auto m = 10_money / 2;
+    [[maybe_unused]] constexpr auto m = 10_money / 2;
   }
   {
-    constexpr auto m = -10_money / 2;
+    [[maybe_unused]] constexpr auto m = -10_money / 2;
   }
   {
-    constexpr auto m = 2 * 1_money;
+    [[maybe_unused]] constexpr auto m = 2 * 1_money;
   }
   {
-    constexpr auto m = -1_money * 2;
+    [[maybe_unused]] constexpr auto m = -1_money * 2;
   }
   {
-    constexpr auto m = 2 * -1_money;
+    [[maybe_unused]] constexpr auto m = 2 * -1_money;
   }
   {
-    constexpr auto r = -1_money == -1_money;
+    [[maybe_unused]] constexpr auto r = -1_money == -1_money;
   }
   {
-    constexpr auto r = -1_money != -1_money;
+    [[maybe_unused]] constexpr auto r = -1_money != -1_money;
   }
   {
-    constexpr auto r = -1_money <= -1_money;
+    [[maybe_unused]] constexpr auto r = -1_money <= -1_money;
   }
   {
-    constexpr auto r = -1_money >= -1_money;
+    [[maybe_unused]] constexpr auto r = -1_money >= -1_money;
   }
   {
-    constexpr auto r = -1_money < -1_money;
+    [[maybe_unused]] constexpr auto r = -1_money < -1_money;
   }
   {
-    constexpr auto r = -1_money > -1_money;
+    [[maybe_unused]] constexpr auto r = -1_money > -1_money;
   }
 }
 
@@ -259,13 +259,13 @@ BOOST_AUTO_TEST_CASE(Arithmetic)
     }
   }
 
-  BOOST_CHECK_THROW(auto const m = 4_money / 3, io1::Money::InexactDivision);
+  BOOST_CHECK_THROW([[maybe_unused]] auto const m = 4_money / 3, io1::Money::InexactDivision);
 
   {
     auto m = 4_money;
     try
     {
-      auto const m2 = m / 3;
+      [[maybe_unused]] auto const m2 = m / 3;
     }
     catch (io1::Money::InexactDivision const & e)
     {

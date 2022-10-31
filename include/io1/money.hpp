@@ -45,8 +45,8 @@ namespace io1
 
     [[nodiscard]] constexpr value_type const & data(void) const noexcept { return amount_; };
 
-    [[nodiscard]] constexpr Money operator++(int ignored) noexcept { return Money{amount_++}; };
-    [[nodiscard]] constexpr Money operator--(int ignored) noexcept { return Money{amount_--}; };
+    [[nodiscard]] constexpr Money operator++(int) noexcept { return Money{amount_++}; };
+    [[nodiscard]] constexpr Money operator--(int) noexcept { return Money{amount_--}; };
 
     constexpr Money & operator++(void) noexcept
     {
@@ -245,7 +245,7 @@ namespace io1
 
   struct Money::GetMoney
   {
-    explicit GetMoney(Money & m, bool intl) noexcept : amount_(m.amount_), intl_(intl){};
+    explicit GetMoney(Money & m, bool intl) noexcept : intl_(intl), amount_(m.amount_){};
     GetMoney(GetMoney const &) = delete;
     GetMoney & operator=(GetMoney const &) = delete;
 
@@ -276,7 +276,7 @@ namespace io1
 
   struct Money::PutMoney
   {
-    explicit PutMoney(Money m, bool intl) noexcept : amount_(std::to_string(m.data())), intl_(intl){};
+    explicit PutMoney(Money m, bool intl) noexcept : intl_(intl), amount_(std::to_string(m.data())){};
     PutMoney(PutMoney const &) = delete;
     PutMoney & operator=(PutMoney const &) = delete;
 
