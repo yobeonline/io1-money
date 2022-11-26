@@ -1,8 +1,9 @@
 #include "io1/money.hpp"
 
-#include <boost/test/unit_test.hpp>
+#include <doctest/doctest.h>
 #include <numeric>
 #include <sstream>
+#include <vector>
 
 class american_moneypunct_facet : public std::moneypunct<char, false>
 {
@@ -34,7 +35,7 @@ private:
   return plan;
 };
 
-BOOST_AUTO_TEST_CASE(Tutorial)
+TEST_CASE("Tutorial")
 {
   auto const unit_price = 12.00_money;
   auto const vat = 1.2;
@@ -65,8 +66,8 @@ BOOST_AUTO_TEST_CASE(Tutorial)
   cout << installments_nb << " payments:";
   for (auto const & amount : payment_plan) cout << ' ' << put_money(amount);
 
-  BOOST_CHECK_EQUAL(std::accumulate(payment_plan.begin(), payment_plan.end(), 0_money), final_price);
-  BOOST_CHECK_EQUAL(cout.str(), "Total: $26.92\n5 payments: $5.39 $5.39 $5.38 $5.38 $5.38");
+  CHECK_EQ(std::accumulate(payment_plan.begin(), payment_plan.end(), 0_money), final_price);
+  CHECK_EQ(cout.str(), "Total: $26.92\n5 payments: $5.39 $5.39 $5.38 $5.38 $5.38");
 
   return;
 }

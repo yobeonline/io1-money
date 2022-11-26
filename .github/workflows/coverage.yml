@@ -37,10 +37,15 @@ jobs:
           sudo apt-get clean
 
       - name: Create report
-        run: gcovr --xml-pretty --filter include/money.hpp --exclude-unreachable-branches --print-summary -o build/bin/coverage.xml --root . --object-directory build
+        run: gcovr --xml-pretty --filter include/io1/money.hpp --print-summary -o coverage.xml -r . build
 
-      - uses: 5monkeys/cobertura-action@v12
+      - uses: 5monkeys/cobertura-action@v13
         with:
-          path: build/bin/coverage.xml
+          path: coverage.xml
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          minimum_coverage: 80
+          minimum_coverage: 84
+          fail_below_threshold: true
+          show_line: true
+          show_branch: true
+          show_missing: true
+          

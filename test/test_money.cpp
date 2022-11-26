@@ -5,17 +5,16 @@
 #include <string_view>
 #include <utility>
 
-#define BOOST_TEST_MODULE io1::Money test
-#include <boost/test/unit_test.hpp>
-#include <boost/type_traits/is_detected.hpp>
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest/doctest.h>
 
-BOOST_AUTO_TEST_CASE(Bounds)
+TEST_CASE("Value bounds")
 {
   [[maybe_unused]] constexpr auto max = 9'223'372'036'854'775'807_money;
   [[maybe_unused]] constexpr auto min = -9'223'372'036'854'775'807_money - 1_money;
 }
 
-BOOST_AUTO_TEST_CASE(Constexpr)
+TEST_CASE("Constexpr functions")
 {
   {
     [[maybe_unused]] constexpr io1::Money m(1_money);
@@ -100,150 +99,98 @@ BOOST_AUTO_TEST_CASE(Constexpr)
   }
 }
 
-template <typename T>
-using floating_point_constructor = decltype(io1::Money(std::declval<T>()));
-template <typename T>
-using floating_point_multiplication_assignment = decltype(std::declval<io1::Money>().operator*=<T>(std::declval<T>()));
-template <typename T>
-using floating_point_division_assignment = decltype(std::declval<io1::Money>().operator/=<T>(std::declval<T>()));
-template <typename T>
-using floating_point_division = decltype(io1::operator/<T>(std::declval<io1::Money>(), std::declval<T>()));
-template <typename T>
-using floating_point_left_multiplication = decltype(io1::operator*<T>(std::declval<T>(), std::declval<io1::Money>()));
-template <typename T>
-using floating_point_right_multiplication = decltype(io1::operator*<T>(std::declval<io1::Money>(), std::declval<T>()));
-template <typename T = long double>
-using floating_point_right_multiplication_rounding =
-    decltype(io1::operator*(std::declval<io1::Money>(), std::declval<T>()));
-
-BOOST_AUTO_TEST_CASE(DeletedFunctions) // template instances that must not compile
+TEST_CASE("Constructors")
 {
-  BOOST_TEST_CHECK((boost::is_detected_v<floating_point_constructor, int>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_constructor, float>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_constructor, double>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_constructor, long double>));
-
-  BOOST_TEST_CHECK((boost::is_detected_v<floating_point_multiplication_assignment, int>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_multiplication_assignment, float>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_multiplication_assignment, double>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_multiplication_assignment, long double>));
-
-  BOOST_TEST_CHECK((boost::is_detected_v<floating_point_division_assignment, int>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_division_assignment, float>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_division_assignment, double>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_division_assignment, long double>));
-
-  BOOST_TEST_CHECK((boost::is_detected_v<floating_point_division, int>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_division, float>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_division, double>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_division, long double>));
-
-  BOOST_TEST_CHECK((boost::is_detected_v<floating_point_left_multiplication, int>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_left_multiplication, float>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_left_multiplication, double>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_left_multiplication, long double>));
-
-  BOOST_TEST_CHECK((boost::is_detected_v<floating_point_right_multiplication, int>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_right_multiplication, float>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_right_multiplication, double>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_right_multiplication, long double>));
-
-  BOOST_TEST_CHECK((boost::is_detected_v<floating_point_right_multiplication_rounding, int>));
-  BOOST_TEST_CHECK(!(boost::is_detected_v<floating_point_right_multiplication_rounding>));
+  CHECK_EQ(0, io1::Money(0).data());
+  CHECK_EQ(20, io1::Money(20).data());
+  CHECK_EQ(-20, io1::Money(-20).data());
 }
 
-BOOST_AUTO_TEST_CASE(Constructors)
+TEST_CASE("Literal constructions")
 {
-  BOOST_CHECK_EQUAL(0, io1::Money(0).data());
-  BOOST_CHECK_EQUAL(20, io1::Money(20).data());
-  BOOST_CHECK_EQUAL(-20, io1::Money(-20).data());
-}
+  CHECK_EQ(0, (0_money).data());
+  CHECK_EQ(0, (-0_money).data());
+  CHECK_EQ(1, (1_money).data());
+  CHECK_EQ(-1, (-1_money).data());
+  CHECK_EQ(10, (10_money).data());
+  CHECK_EQ(-15, (-15_money).data());
+  CHECK_EQ(9'000'000'000'000'000'000, (9'000'000'000'000'000'000_money).data());
+  CHECK_EQ(-9'000'000'000'000'000'000, (-9'000'000'000'000'000'000_money).data());
 
-BOOST_AUTO_TEST_CASE(LiteralConstructions)
-{
-  BOOST_CHECK_EQUAL(0, (0_money).data());
-  BOOST_CHECK_EQUAL(0, (-0_money).data());
-  BOOST_CHECK_EQUAL(1, (1_money).data());
-  BOOST_CHECK_EQUAL(-1, (-1_money).data());
-  BOOST_CHECK_EQUAL(10, (10_money).data());
-  BOOST_CHECK_EQUAL(-15, (-15_money).data());
-  BOOST_CHECK_EQUAL(9'000'000'000'000'000'000, (9'000'000'000'000'000'000_money).data());
-  BOOST_CHECK_EQUAL(-9'000'000'000'000'000'000, (-9'000'000'000'000'000'000_money).data());
-
-  BOOST_CHECK_EQUAL(0, (0.00_money).data());
-  BOOST_CHECK_EQUAL(0, (-0.00_money).data());
-  BOOST_CHECK_EQUAL(1, (0.1_money).data());
-  BOOST_CHECK_EQUAL(-1, (-0.1_money).data());
-  BOOST_CHECK_EQUAL(1, (1._money).data());
-  BOOST_CHECK_EQUAL(-1, (-1._money).data());
-  BOOST_CHECK_EQUAL(112, (1.12_money).data());
-  BOOST_CHECK_EQUAL(-112, (-1.12_money).data());
-  BOOST_CHECK_EQUAL(101234, (10.1234_money).data());
-  BOOST_CHECK_EQUAL(-151, (-15.1_money).data());
-  BOOST_CHECK_EQUAL(9'000'000'000'000'000'000, (9.000'000'000'000'000'000_money).data());
-  BOOST_CHECK_EQUAL(-9'000'000'000'000'000'000, (-9.000'000'000'000'000'000_money).data());
+  CHECK_EQ(0, (0.00_money).data());
+  CHECK_EQ(0, (-0.00_money).data());
+  CHECK_EQ(1, (0.1_money).data());
+  CHECK_EQ(-1, (-0.1_money).data());
+  CHECK_EQ(1, (1._money).data());
+  CHECK_EQ(-1, (-1._money).data());
+  CHECK_EQ(112, (1.12_money).data());
+  CHECK_EQ(-112, (-1.12_money).data());
+  CHECK_EQ(101234, (10.1234_money).data());
+  CHECK_EQ(-151, (-15.1_money).data());
+  CHECK_EQ(9'000'000'000'000'000'000, (9.000'000'000'000'000'000_money).data());
+  CHECK_EQ(-9'000'000'000'000'000'000, (-9.000'000'000'000'000'000_money).data());
 
   return;
 }
 
-BOOST_AUTO_TEST_CASE(Arithmetic)
+TEST_CASE("Arithmetic")
 {
-  BOOST_CHECK_EQUAL(25_money, 10_money += 15_money);
-  BOOST_CHECK_EQUAL(-5_money, 10_money -= 15_money);
-  BOOST_CHECK_EQUAL(5_money, 15_money -= 10_money);
-  BOOST_CHECK_EQUAL(25_money, 15_money += 10_money);
-  BOOST_CHECK_EQUAL(-5_money, -15_money += 10_money);
-  BOOST_CHECK_EQUAL(5_money, -10_money += 15_money);
+  CHECK_EQ(25_money, 10_money += 15_money);
+  CHECK_EQ(-5_money, 10_money -= 15_money);
+  CHECK_EQ(5_money, 15_money -= 10_money);
+  CHECK_EQ(25_money, 15_money += 10_money);
+  CHECK_EQ(-5_money, -15_money += 10_money);
+  CHECK_EQ(5_money, -10_money += 15_money);
 
-  BOOST_CHECK_EQUAL(25_money, 10_money + 15_money);
-  BOOST_CHECK_EQUAL(-5_money, 10_money - 15_money);
-  BOOST_CHECK_EQUAL(5_money, 15_money - 10_money);
-  BOOST_CHECK_EQUAL(25_money, 15_money + 10_money);
-  BOOST_CHECK_EQUAL(-5_money, -15_money + 10_money);
-  BOOST_CHECK_EQUAL(5_money, -10_money + 15_money);
+  CHECK_EQ(25_money, 10_money + 15_money);
+  CHECK_EQ(-5_money, 10_money - 15_money);
+  CHECK_EQ(5_money, 15_money - 10_money);
+  CHECK_EQ(25_money, 15_money + 10_money);
+  CHECK_EQ(-5_money, -15_money + 10_money);
+  CHECK_EQ(5_money, -10_money + 15_money);
 
-  BOOST_CHECK_EQUAL(5_money, ++4_money);
-  BOOST_CHECK_EQUAL(4_money, 4_money ++);
-  BOOST_CHECK_EQUAL(4_money, --5_money);
-  BOOST_CHECK_EQUAL(5_money, 5_money --);
+  CHECK_EQ(5_money, ++4_money);
+  CHECK_EQ(4_money, 4_money ++);
+  CHECK_EQ(4_money, --5_money);
+  CHECK_EQ(5_money, 5_money --);
 
   {
     auto m = 1_money;
     auto tmp = m++;
-    BOOST_CHECK_EQUAL(2_money, m);
+    CHECK_EQ(2_money, m);
     tmp = m--;
-    BOOST_CHECK_EQUAL(1_money, m);
+    CHECK_EQ(1_money, m);
     tmp = -m;
-    BOOST_CHECK_EQUAL(1_money, m);
+    CHECK_EQ(1_money, m);
   }
 
-  BOOST_CHECK_EQUAL(5_money, 1_money * 5);
-  BOOST_CHECK_EQUAL(5.010_money, 2.505_money * 2);
-  BOOST_CHECK_EQUAL(5_money, 5 * 1_money);
-  BOOST_CHECK_EQUAL(5.010_money, 2 * 2.505_money);
-  BOOST_CHECK_EQUAL(-5_money, 1_money * -5);
-  BOOST_CHECK_EQUAL(-5.010_money, 2.505_money * -2);
-  BOOST_CHECK_EQUAL(-5_money, -5 * 1_money);
-  BOOST_CHECK_EQUAL(-5.010_money, -2 * 2.505_money);
+  CHECK_EQ(5_money, 1_money * 5);
+  CHECK_EQ(5.010_money, 2.505_money * 2);
+  CHECK_EQ(5_money, 5 * 1_money);
+  CHECK_EQ(5.010_money, 2 * 2.505_money);
+  CHECK_EQ(-5_money, 1_money * -5);
+  CHECK_EQ(-5.010_money, 2.505_money * -2);
+  CHECK_EQ(-5_money, -5 * 1_money);
+  CHECK_EQ(-5.010_money, -2 * 2.505_money);
 
-  BOOST_CHECK_EQUAL(5_money, 1_money *= 5);
-  BOOST_CHECK_EQUAL(5.010_money, 2.505_money *= 2);
-  BOOST_CHECK_EQUAL(-5_money, 1_money *= -5);
-  BOOST_CHECK_EQUAL(-5.010_money, 2.505_money *= -2);
+  CHECK_EQ(5_money, 1_money *= 5);
+  CHECK_EQ(5.010_money, 2.505_money *= 2);
+  CHECK_EQ(-5_money, 1_money *= -5);
+  CHECK_EQ(-5.010_money, 2.505_money *= -2);
 
-  BOOST_CHECK_EQUAL(2_money, 4_money / 2);
-  BOOST_CHECK_EQUAL(-2_money, -4_money / 2);
-  BOOST_CHECK_EQUAL(2_money, -4_money / -2);
-  BOOST_CHECK_EQUAL(-2_money, 4_money / -2);
-  BOOST_CHECK_EQUAL(0_money, 0_money / -2);
+  CHECK_EQ(2_money, 4_money / 2);
+  CHECK_EQ(-2_money, -4_money / 2);
+  CHECK_EQ(2_money, -4_money / -2);
+  CHECK_EQ(-2_money, 4_money / -2);
+  CHECK_EQ(0_money, 0_money / -2);
 
-  BOOST_CHECK_EQUAL(2_money, 4_money /= 2);
-  BOOST_CHECK_EQUAL(-2_money, -4_money /= 2);
-  BOOST_CHECK_EQUAL(2_money, -4_money /= -2);
-  BOOST_CHECK_EQUAL(-2_money, 4_money /= -2);
-  BOOST_CHECK_EQUAL(0_money, 0_money /= -2);
+  CHECK_EQ(2_money, 4_money /= 2);
+  CHECK_EQ(-2_money, -4_money /= 2);
+  CHECK_EQ(2_money, -4_money /= -2);
+  CHECK_EQ(-2_money, 4_money /= -2);
+  CHECK_EQ(0_money, 0_money /= -2);
 
-  BOOST_CHECK_THROW(4_money /= 3, io1::Money::InexactDivision);
+  CHECK_THROWS_AS(4_money /= 3, io1::Money::InexactDivision);
 
   {
     auto m = 4_money;
@@ -253,13 +200,13 @@ BOOST_AUTO_TEST_CASE(Arithmetic)
     }
     catch (io1::Money::InexactDivision const & e)
     {
-      BOOST_CHECK_EQUAL(4, e.dividend);
-      BOOST_CHECK_EQUAL(3, e.divisor);
-      BOOST_CHECK_EQUAL(4_money, m);
+      CHECK_EQ(4, e.dividend);
+      CHECK_EQ(3, e.divisor);
+      CHECK_EQ(4_money, m);
     }
   }
 
-  BOOST_CHECK_THROW([[maybe_unused]] auto const m = 4_money / 3, io1::Money::InexactDivision);
+  CHECK_THROWS_AS([[maybe_unused]] auto const m = 4_money / 3, io1::Money::InexactDivision);
 
   {
     auto m = 4_money;
@@ -269,265 +216,265 @@ BOOST_AUTO_TEST_CASE(Arithmetic)
     }
     catch (io1::Money::InexactDivision const & e)
     {
-      BOOST_CHECK_EQUAL(4, e.dividend);
-      BOOST_CHECK_EQUAL(3, e.divisor);
-      BOOST_CHECK_EQUAL(4_money, m);
+      CHECK_EQ(4, e.dividend);
+      CHECK_EQ(3, e.divisor);
+      CHECK_EQ(4_money, m);
     }
   }
 
   {
     auto const result = div(10_money, 2);
-    BOOST_CHECK_EQUAL(5_money, result.quot);
-    BOOST_CHECK_EQUAL(0_money, result.rem);
+    CHECK_EQ(5_money, result.quot);
+    CHECK_EQ(0_money, result.rem);
   }
 
   {
     auto const result = div(-10_money, 2);
-    BOOST_CHECK_EQUAL(-5_money, result.quot);
-    BOOST_CHECK_EQUAL(0_money, result.rem);
+    CHECK_EQ(-5_money, result.quot);
+    CHECK_EQ(0_money, result.rem);
   }
 
   {
     auto const result = div(10_money, -2);
-    BOOST_CHECK_EQUAL(-5_money, result.quot);
-    BOOST_CHECK_EQUAL(0_money, result.rem);
+    CHECK_EQ(-5_money, result.quot);
+    CHECK_EQ(0_money, result.rem);
   }
 
   {
     auto const result = div(-10_money, -2);
-    BOOST_CHECK_EQUAL(5_money, result.quot);
-    BOOST_CHECK_EQUAL(0_money, result.rem);
+    CHECK_EQ(5_money, result.quot);
+    CHECK_EQ(0_money, result.rem);
   }
 
   {
     auto const result = div(10_money, 3);
-    BOOST_CHECK_EQUAL(3_money, result.quot);
-    BOOST_CHECK_EQUAL(1_money, result.rem);
+    CHECK_EQ(3_money, result.quot);
+    CHECK_EQ(1_money, result.rem);
   }
 
   {
     auto const result = div(-10_money, 3);
-    BOOST_CHECK_EQUAL(-3_money, result.quot);
-    BOOST_CHECK_EQUAL(-1_money, result.rem);
+    CHECK_EQ(-3_money, result.quot);
+    CHECK_EQ(-1_money, result.rem);
   }
 
   {
     auto const result = div(10_money, -3);
-    BOOST_CHECK_EQUAL(-3_money, result.quot);
-    BOOST_CHECK_EQUAL(1_money, result.rem);
+    CHECK_EQ(-3_money, result.quot);
+    CHECK_EQ(1_money, result.rem);
   }
 
   {
     auto const result = div(-10_money, -3);
-    BOOST_CHECK_EQUAL(3_money, result.quot);
-    BOOST_CHECK_EQUAL(-1_money, result.rem);
+    CHECK_EQ(3_money, result.quot);
+    CHECK_EQ(-1_money, result.rem);
   }
 
   return;
 }
 
-BOOST_AUTO_TEST_CASE(FloatArithmetic)
+TEST_CASE("Float arithmetic")
 {
-  BOOST_CHECK_EQUAL(10_money, 2.f * 5_money);
-  BOOST_CHECK_EQUAL(-10_money, -2.f * 5_money);
-  BOOST_CHECK_EQUAL(-10_money, 2.f * -5_money);
-  BOOST_CHECK_EQUAL(10_money, -2.f * -5_money);
-  BOOST_CHECK_EQUAL(0_money, 0.f * 5_money);
-  BOOST_CHECK_EQUAL(0_money, 0.f * -5_money);
+  CHECK_EQ(10_money, 2.f * 5_money);
+  CHECK_EQ(-10_money, -2.f * 5_money);
+  CHECK_EQ(-10_money, 2.f * -5_money);
+  CHECK_EQ(10_money, -2.f * -5_money);
+  CHECK_EQ(0_money, 0.f * 5_money);
+  CHECK_EQ(0_money, 0.f * -5_money);
 
-  BOOST_CHECK_EQUAL(10_money, 5_money *= 2.f);
-  BOOST_CHECK_EQUAL(-10_money, 5_money *= -2.f);
-  BOOST_CHECK_EQUAL(-10_money, -5_money *= 2.f);
-  BOOST_CHECK_EQUAL(10_money, -5_money *= -2.f);
-  BOOST_CHECK_EQUAL(0_money, 5_money *= 0.f);
-  BOOST_CHECK_EQUAL(0_money, -5_money *= 0.f);
+  CHECK_EQ(10_money, 5_money *= 2.f);
+  CHECK_EQ(-10_money, 5_money *= -2.f);
+  CHECK_EQ(-10_money, -5_money *= 2.f);
+  CHECK_EQ(10_money, -5_money *= -2.f);
+  CHECK_EQ(0_money, 5_money *= 0.f);
+  CHECK_EQ(0_money, -5_money *= 0.f);
 
-  BOOST_CHECK_EQUAL(5_money, 10_money / 2.f);
-  BOOST_CHECK_EQUAL(-5_money, 10_money / -2.f);
-  BOOST_CHECK_EQUAL(-5_money, -10_money / 2.f);
-  BOOST_CHECK_EQUAL(5_money, -10_money / -2.f);
-  BOOST_CHECK_EQUAL(0_money, 0_money / 5.f);
-  BOOST_CHECK_EQUAL(0_money, 0_money / -5.f);
+  CHECK_EQ(5_money, 10_money / 2.f);
+  CHECK_EQ(-5_money, 10_money / -2.f);
+  CHECK_EQ(-5_money, -10_money / 2.f);
+  CHECK_EQ(5_money, -10_money / -2.f);
+  CHECK_EQ(0_money, 0_money / 5.f);
+  CHECK_EQ(0_money, 0_money / -5.f);
 
-  BOOST_CHECK_EQUAL(5_money, 10_money /= 2.f);
-  BOOST_CHECK_EQUAL(-5_money, 10_money /= -2.f);
-  BOOST_CHECK_EQUAL(-5_money, -10_money /= 2.f);
-  BOOST_CHECK_EQUAL(5_money, -10_money /= -2.f);
-  BOOST_CHECK_EQUAL(0_money, 0_money /= 5.f);
-  BOOST_CHECK_EQUAL(0_money, 0_money /= -5.f);
+  CHECK_EQ(5_money, 10_money /= 2.f);
+  CHECK_EQ(-5_money, 10_money /= -2.f);
+  CHECK_EQ(-5_money, -10_money /= 2.f);
+  CHECK_EQ(5_money, -10_money /= -2.f);
+  CHECK_EQ(0_money, 0_money /= 5.f);
+  CHECK_EQ(0_money, 0_money /= -5.f);
 
   return;
 }
 
-BOOST_AUTO_TEST_CASE(FloatArithmeticOrderOfEvaluation)
+TEST_CASE("Float arithmetic order of evaluation")
 {
-  BOOST_CHECK_EQUAL(2_money, 0.1 * 10. * 2_money);
-  BOOST_CHECK_EQUAL(2_money, 2_money *= 0.1 * 10.);
+  CHECK_EQ(2_money, 0.1 * 10. * 2_money);
+  CHECK_EQ(2_money, 2_money *= 0.1 * 10.);
 
   return;
 }
 
-BOOST_AUTO_TEST_CASE(RoundingFloatArithmetic)
+TEST_CASE("Rounding float arithmetic")
 {
-  BOOST_CHECK_EQUAL(0_money, 0.1f * 1_money);
-  BOOST_CHECK_EQUAL(0_money, 0.5f * 1_money);
-  BOOST_CHECK_EQUAL(1_money, 0.9f * 1_money);
-  BOOST_CHECK_EQUAL(2_money, 2.1f * 1_money);
-  BOOST_CHECK_EQUAL(2_money, 2.5f * 1_money);
-  BOOST_CHECK_EQUAL(3_money, 2.9f * 1_money);
-  BOOST_CHECK_EQUAL(3_money, 3.1f * 1_money);
-  BOOST_CHECK_EQUAL(4_money, 3.5f * 1_money);
-  BOOST_CHECK_EQUAL(4_money, 3.9f * 1_money);
+  CHECK_EQ(0_money, 0.1f * 1_money);
+  CHECK_EQ(0_money, 0.5f * 1_money);
+  CHECK_EQ(1_money, 0.9f * 1_money);
+  CHECK_EQ(2_money, 2.1f * 1_money);
+  CHECK_EQ(2_money, 2.5f * 1_money);
+  CHECK_EQ(3_money, 2.9f * 1_money);
+  CHECK_EQ(3_money, 3.1f * 1_money);
+  CHECK_EQ(4_money, 3.5f * 1_money);
+  CHECK_EQ(4_money, 3.9f * 1_money);
 
-  BOOST_CHECK_EQUAL(0_money, 1_money *= 0.1f);
-  BOOST_CHECK_EQUAL(0_money, 1_money *= 0.5f);
-  BOOST_CHECK_EQUAL(1_money, 1_money *= 0.9f);
-  BOOST_CHECK_EQUAL(2_money, 1_money *= 2.1f);
-  BOOST_CHECK_EQUAL(2_money, 1_money *= 2.5f);
-  BOOST_CHECK_EQUAL(3_money, 1_money *= 2.9f);
-  BOOST_CHECK_EQUAL(3_money, 1_money *= 3.1f);
-  BOOST_CHECK_EQUAL(4_money, 1_money *= 3.5f);
-  BOOST_CHECK_EQUAL(4_money, 1_money *= 3.9f);
+  CHECK_EQ(0_money, 1_money *= 0.1f);
+  CHECK_EQ(0_money, 1_money *= 0.5f);
+  CHECK_EQ(1_money, 1_money *= 0.9f);
+  CHECK_EQ(2_money, 1_money *= 2.1f);
+  CHECK_EQ(2_money, 1_money *= 2.5f);
+  CHECK_EQ(3_money, 1_money *= 2.9f);
+  CHECK_EQ(3_money, 1_money *= 3.1f);
+  CHECK_EQ(4_money, 1_money *= 3.5f);
+  CHECK_EQ(4_money, 1_money *= 3.9f);
 
-  BOOST_CHECK_EQUAL(0_money, -0.1f * 1_money);
-  BOOST_CHECK_EQUAL(0_money, -0.5f * 1_money);
-  BOOST_CHECK_EQUAL(-1_money, -0.9f * 1_money);
-  BOOST_CHECK_EQUAL(-2_money, -2.1f * 1_money);
-  BOOST_CHECK_EQUAL(-2_money, -2.5f * 1_money);
-  BOOST_CHECK_EQUAL(-3_money, -2.9f * 1_money);
-  BOOST_CHECK_EQUAL(-3_money, -3.1f * 1_money);
-  BOOST_CHECK_EQUAL(-4_money, -3.5f * 1_money);
-  BOOST_CHECK_EQUAL(-4_money, -3.9f * 1_money);
+  CHECK_EQ(0_money, -0.1f * 1_money);
+  CHECK_EQ(0_money, -0.5f * 1_money);
+  CHECK_EQ(-1_money, -0.9f * 1_money);
+  CHECK_EQ(-2_money, -2.1f * 1_money);
+  CHECK_EQ(-2_money, -2.5f * 1_money);
+  CHECK_EQ(-3_money, -2.9f * 1_money);
+  CHECK_EQ(-3_money, -3.1f * 1_money);
+  CHECK_EQ(-4_money, -3.5f * 1_money);
+  CHECK_EQ(-4_money, -3.9f * 1_money);
 
-  BOOST_CHECK_EQUAL(0_money, 1_money *= -0.1f);
-  BOOST_CHECK_EQUAL(0_money, 1_money *= -0.5f);
-  BOOST_CHECK_EQUAL(-1_money, 1_money *= -0.9f);
-  BOOST_CHECK_EQUAL(-2_money, 1_money *= -2.1f);
-  BOOST_CHECK_EQUAL(-2_money, 1_money *= -2.5f);
-  BOOST_CHECK_EQUAL(-3_money, 1_money *= -2.9f);
-  BOOST_CHECK_EQUAL(-3_money, 1_money *= -3.1f);
-  BOOST_CHECK_EQUAL(-4_money, 1_money *= -3.5f);
-  BOOST_CHECK_EQUAL(-4_money, 1_money *= -3.9f);
+  CHECK_EQ(0_money, 1_money *= -0.1f);
+  CHECK_EQ(0_money, 1_money *= -0.5f);
+  CHECK_EQ(-1_money, 1_money *= -0.9f);
+  CHECK_EQ(-2_money, 1_money *= -2.1f);
+  CHECK_EQ(-2_money, 1_money *= -2.5f);
+  CHECK_EQ(-3_money, 1_money *= -2.9f);
+  CHECK_EQ(-3_money, 1_money *= -3.1f);
+  CHECK_EQ(-4_money, 1_money *= -3.5f);
+  CHECK_EQ(-4_money, 1_money *= -3.9f);
 
-  BOOST_CHECK_EQUAL(0_money, 0.1f * -1_money);
-  BOOST_CHECK_EQUAL(0_money, 0.5f * -1_money);
-  BOOST_CHECK_EQUAL(-1_money, 0.9f * -1_money);
-  BOOST_CHECK_EQUAL(-2_money, 2.1f * -1_money);
-  BOOST_CHECK_EQUAL(-2_money, 2.5f * -1_money);
-  BOOST_CHECK_EQUAL(-3_money, 2.9f * -1_money);
-  BOOST_CHECK_EQUAL(-3_money, 3.1f * -1_money);
-  BOOST_CHECK_EQUAL(-4_money, 3.5f * -1_money);
-  BOOST_CHECK_EQUAL(-4_money, 3.9f * -1_money);
+  CHECK_EQ(0_money, 0.1f * -1_money);
+  CHECK_EQ(0_money, 0.5f * -1_money);
+  CHECK_EQ(-1_money, 0.9f * -1_money);
+  CHECK_EQ(-2_money, 2.1f * -1_money);
+  CHECK_EQ(-2_money, 2.5f * -1_money);
+  CHECK_EQ(-3_money, 2.9f * -1_money);
+  CHECK_EQ(-3_money, 3.1f * -1_money);
+  CHECK_EQ(-4_money, 3.5f * -1_money);
+  CHECK_EQ(-4_money, 3.9f * -1_money);
 
-  BOOST_CHECK_EQUAL(0_money, -1_money *= 0.1f);
-  BOOST_CHECK_EQUAL(0_money, -1_money *= 0.5f);
-  BOOST_CHECK_EQUAL(-1_money, -1_money *= 0.9f);
-  BOOST_CHECK_EQUAL(-2_money, -1_money *= 2.1f);
-  BOOST_CHECK_EQUAL(-2_money, -1_money *= 2.5f);
-  BOOST_CHECK_EQUAL(-3_money, -1_money *= 2.9f);
-  BOOST_CHECK_EQUAL(-3_money, -1_money *= 3.1f);
-  BOOST_CHECK_EQUAL(-4_money, -1_money *= 3.5f);
-  BOOST_CHECK_EQUAL(-4_money, -1_money *= 3.9f);
+  CHECK_EQ(0_money, -1_money *= 0.1f);
+  CHECK_EQ(0_money, -1_money *= 0.5f);
+  CHECK_EQ(-1_money, -1_money *= 0.9f);
+  CHECK_EQ(-2_money, -1_money *= 2.1f);
+  CHECK_EQ(-2_money, -1_money *= 2.5f);
+  CHECK_EQ(-3_money, -1_money *= 2.9f);
+  CHECK_EQ(-3_money, -1_money *= 3.1f);
+  CHECK_EQ(-4_money, -1_money *= 3.5f);
+  CHECK_EQ(-4_money, -1_money *= 3.9f);
 
-  BOOST_CHECK_EQUAL(0_money, -0.1f * -1_money);
-  BOOST_CHECK_EQUAL(0_money, -0.5f * -1_money);
-  BOOST_CHECK_EQUAL(1_money, -0.9f * -1_money);
-  BOOST_CHECK_EQUAL(2_money, -2.1f * -1_money);
-  BOOST_CHECK_EQUAL(2_money, -2.5f * -1_money);
-  BOOST_CHECK_EQUAL(3_money, -2.9f * -1_money);
-  BOOST_CHECK_EQUAL(3_money, -3.1f * -1_money);
-  BOOST_CHECK_EQUAL(4_money, -3.5f * -1_money);
-  BOOST_CHECK_EQUAL(4_money, -3.9f * -1_money);
+  CHECK_EQ(0_money, -0.1f * -1_money);
+  CHECK_EQ(0_money, -0.5f * -1_money);
+  CHECK_EQ(1_money, -0.9f * -1_money);
+  CHECK_EQ(2_money, -2.1f * -1_money);
+  CHECK_EQ(2_money, -2.5f * -1_money);
+  CHECK_EQ(3_money, -2.9f * -1_money);
+  CHECK_EQ(3_money, -3.1f * -1_money);
+  CHECK_EQ(4_money, -3.5f * -1_money);
+  CHECK_EQ(4_money, -3.9f * -1_money);
 
-  BOOST_CHECK_EQUAL(0_money, -1_money *= -0.1f);
-  BOOST_CHECK_EQUAL(0_money, -1_money *= -0.5f);
-  BOOST_CHECK_EQUAL(1_money, -1_money *= -0.9f);
-  BOOST_CHECK_EQUAL(2_money, -1_money *= -2.1f);
-  BOOST_CHECK_EQUAL(2_money, -1_money *= -2.5f);
-  BOOST_CHECK_EQUAL(3_money, -1_money *= -2.9f);
-  BOOST_CHECK_EQUAL(3_money, -1_money *= -3.1f);
-  BOOST_CHECK_EQUAL(4_money, -1_money *= -3.5f);
-  BOOST_CHECK_EQUAL(4_money, -1_money *= -3.9f);
+  CHECK_EQ(0_money, -1_money *= -0.1f);
+  CHECK_EQ(0_money, -1_money *= -0.5f);
+  CHECK_EQ(1_money, -1_money *= -0.9f);
+  CHECK_EQ(2_money, -1_money *= -2.1f);
+  CHECK_EQ(2_money, -1_money *= -2.5f);
+  CHECK_EQ(3_money, -1_money *= -2.9f);
+  CHECK_EQ(3_money, -1_money *= -3.1f);
+  CHECK_EQ(4_money, -1_money *= -3.5f);
+  CHECK_EQ(4_money, -1_money *= -3.9f);
 
-  BOOST_CHECK_EQUAL(1_money, 1_money / 1.9f);
-  BOOST_CHECK_EQUAL(0_money, 1_money / 2.f);
-  BOOST_CHECK_EQUAL(0_money, 1_money / 2.1f);
-  BOOST_CHECK_EQUAL(2_money, 3_money / 1.9f);
-  BOOST_CHECK_EQUAL(2_money, 3_money / 2.f);
-  BOOST_CHECK_EQUAL(1_money, 3_money / 2.1f);
-  BOOST_CHECK_EQUAL(3_money, 5_money / 1.9f);
-  BOOST_CHECK_EQUAL(2_money, 5_money / 2.f);
-  BOOST_CHECK_EQUAL(2_money, 5_money / 2.1f);
+  CHECK_EQ(1_money, 1_money / 1.9f);
+  CHECK_EQ(0_money, 1_money / 2.f);
+  CHECK_EQ(0_money, 1_money / 2.1f);
+  CHECK_EQ(2_money, 3_money / 1.9f);
+  CHECK_EQ(2_money, 3_money / 2.f);
+  CHECK_EQ(1_money, 3_money / 2.1f);
+  CHECK_EQ(3_money, 5_money / 1.9f);
+  CHECK_EQ(2_money, 5_money / 2.f);
+  CHECK_EQ(2_money, 5_money / 2.1f);
 
-  BOOST_CHECK_EQUAL(1_money, 1_money /= 1.9f);
-  BOOST_CHECK_EQUAL(0_money, 1_money /= 2.f);
-  BOOST_CHECK_EQUAL(0_money, 1_money /= 2.1f);
-  BOOST_CHECK_EQUAL(2_money, 3_money /= 1.9f);
-  BOOST_CHECK_EQUAL(2_money, 3_money /= 2.f);
-  BOOST_CHECK_EQUAL(1_money, 3_money /= 2.1f);
-  BOOST_CHECK_EQUAL(3_money, 5_money /= 1.9f);
-  BOOST_CHECK_EQUAL(2_money, 5_money /= 2.f);
-  BOOST_CHECK_EQUAL(2_money, 5_money /= 2.1f);
+  CHECK_EQ(1_money, 1_money /= 1.9f);
+  CHECK_EQ(0_money, 1_money /= 2.f);
+  CHECK_EQ(0_money, 1_money /= 2.1f);
+  CHECK_EQ(2_money, 3_money /= 1.9f);
+  CHECK_EQ(2_money, 3_money /= 2.f);
+  CHECK_EQ(1_money, 3_money /= 2.1f);
+  CHECK_EQ(3_money, 5_money /= 1.9f);
+  CHECK_EQ(2_money, 5_money /= 2.f);
+  CHECK_EQ(2_money, 5_money /= 2.1f);
 
-  BOOST_CHECK_EQUAL(-1_money, -1_money / 1.9f);
-  BOOST_CHECK_EQUAL(0_money, -1_money / 2.f);
-  BOOST_CHECK_EQUAL(0_money, -1_money / 2.1f);
-  BOOST_CHECK_EQUAL(-2_money, -3_money / 1.9f);
-  BOOST_CHECK_EQUAL(-2_money, -3_money / 2.f);
-  BOOST_CHECK_EQUAL(-1_money, -3_money / 2.1f);
-  BOOST_CHECK_EQUAL(-3_money, -5_money / 1.9f);
-  BOOST_CHECK_EQUAL(-2_money, -5_money / 2.f);
-  BOOST_CHECK_EQUAL(-2_money, -5_money / 2.1f);
+  CHECK_EQ(-1_money, -1_money / 1.9f);
+  CHECK_EQ(0_money, -1_money / 2.f);
+  CHECK_EQ(0_money, -1_money / 2.1f);
+  CHECK_EQ(-2_money, -3_money / 1.9f);
+  CHECK_EQ(-2_money, -3_money / 2.f);
+  CHECK_EQ(-1_money, -3_money / 2.1f);
+  CHECK_EQ(-3_money, -5_money / 1.9f);
+  CHECK_EQ(-2_money, -5_money / 2.f);
+  CHECK_EQ(-2_money, -5_money / 2.1f);
 
-  BOOST_CHECK_EQUAL(-1_money, -1_money /= 1.9f);
-  BOOST_CHECK_EQUAL(0_money, -1_money /= 2.f);
-  BOOST_CHECK_EQUAL(0_money, -1_money /= 2.1f);
-  BOOST_CHECK_EQUAL(-2_money, -3_money /= 1.9f);
-  BOOST_CHECK_EQUAL(-2_money, -3_money /= 2.f);
-  BOOST_CHECK_EQUAL(-1_money, -3_money /= 2.1f);
-  BOOST_CHECK_EQUAL(-3_money, -5_money /= 1.9f);
-  BOOST_CHECK_EQUAL(-2_money, -5_money /= 2.f);
-  BOOST_CHECK_EQUAL(-2_money, -5_money /= 2.1f);
+  CHECK_EQ(-1_money, -1_money /= 1.9f);
+  CHECK_EQ(0_money, -1_money /= 2.f);
+  CHECK_EQ(0_money, -1_money /= 2.1f);
+  CHECK_EQ(-2_money, -3_money /= 1.9f);
+  CHECK_EQ(-2_money, -3_money /= 2.f);
+  CHECK_EQ(-1_money, -3_money /= 2.1f);
+  CHECK_EQ(-3_money, -5_money /= 1.9f);
+  CHECK_EQ(-2_money, -5_money /= 2.f);
+  CHECK_EQ(-2_money, -5_money /= 2.1f);
 
-  BOOST_CHECK_EQUAL(-1_money, 1_money / -1.9f);
-  BOOST_CHECK_EQUAL(0_money, 1_money / -2.f);
-  BOOST_CHECK_EQUAL(0_money, 1_money / -2.1f);
-  BOOST_CHECK_EQUAL(-2_money, 3_money / -1.9f);
-  BOOST_CHECK_EQUAL(-2_money, 3_money / -2.f);
-  BOOST_CHECK_EQUAL(-1_money, 3_money / -2.1f);
-  BOOST_CHECK_EQUAL(-3_money, 5_money / -1.9f);
-  BOOST_CHECK_EQUAL(-2_money, 5_money / -2.f);
-  BOOST_CHECK_EQUAL(-2_money, 5_money / -2.1f);
+  CHECK_EQ(-1_money, 1_money / -1.9f);
+  CHECK_EQ(0_money, 1_money / -2.f);
+  CHECK_EQ(0_money, 1_money / -2.1f);
+  CHECK_EQ(-2_money, 3_money / -1.9f);
+  CHECK_EQ(-2_money, 3_money / -2.f);
+  CHECK_EQ(-1_money, 3_money / -2.1f);
+  CHECK_EQ(-3_money, 5_money / -1.9f);
+  CHECK_EQ(-2_money, 5_money / -2.f);
+  CHECK_EQ(-2_money, 5_money / -2.1f);
 
-  BOOST_CHECK_EQUAL(-1_money, 1_money /= -1.9f);
-  BOOST_CHECK_EQUAL(0_money, 1_money /= -2.f);
-  BOOST_CHECK_EQUAL(0_money, 1_money /= -2.1f);
-  BOOST_CHECK_EQUAL(-2_money, 3_money /= -1.9f);
-  BOOST_CHECK_EQUAL(-2_money, 3_money /= -2.f);
-  BOOST_CHECK_EQUAL(-1_money, 3_money /= -2.1f);
-  BOOST_CHECK_EQUAL(-3_money, 5_money /= -1.9f);
-  BOOST_CHECK_EQUAL(-2_money, 5_money /= -2.f);
-  BOOST_CHECK_EQUAL(-2_money, 5_money /= -2.1f);
+  CHECK_EQ(-1_money, 1_money /= -1.9f);
+  CHECK_EQ(0_money, 1_money /= -2.f);
+  CHECK_EQ(0_money, 1_money /= -2.1f);
+  CHECK_EQ(-2_money, 3_money /= -1.9f);
+  CHECK_EQ(-2_money, 3_money /= -2.f);
+  CHECK_EQ(-1_money, 3_money /= -2.1f);
+  CHECK_EQ(-3_money, 5_money /= -1.9f);
+  CHECK_EQ(-2_money, 5_money /= -2.f);
+  CHECK_EQ(-2_money, 5_money /= -2.1f);
 
-  BOOST_CHECK_EQUAL(1_money, -1_money / -1.9f);
-  BOOST_CHECK_EQUAL(0_money, -1_money / -2.f);
-  BOOST_CHECK_EQUAL(0_money, -1_money / -2.1f);
-  BOOST_CHECK_EQUAL(2_money, -3_money / -1.9f);
-  BOOST_CHECK_EQUAL(2_money, -3_money / -2.f);
-  BOOST_CHECK_EQUAL(1_money, -3_money / -2.1f);
-  BOOST_CHECK_EQUAL(3_money, -5_money / -1.9f);
-  BOOST_CHECK_EQUAL(2_money, -5_money / -2.f);
-  BOOST_CHECK_EQUAL(2_money, -5_money / -2.1f);
+  CHECK_EQ(1_money, -1_money / -1.9f);
+  CHECK_EQ(0_money, -1_money / -2.f);
+  CHECK_EQ(0_money, -1_money / -2.1f);
+  CHECK_EQ(2_money, -3_money / -1.9f);
+  CHECK_EQ(2_money, -3_money / -2.f);
+  CHECK_EQ(1_money, -3_money / -2.1f);
+  CHECK_EQ(3_money, -5_money / -1.9f);
+  CHECK_EQ(2_money, -5_money / -2.f);
+  CHECK_EQ(2_money, -5_money / -2.1f);
 
-  BOOST_CHECK_EQUAL(1_money, -1_money /= -1.9f);
-  BOOST_CHECK_EQUAL(0_money, -1_money /= -2.f);
-  BOOST_CHECK_EQUAL(0_money, -1_money /= -2.1f);
-  BOOST_CHECK_EQUAL(2_money, -3_money /= -1.9f);
-  BOOST_CHECK_EQUAL(2_money, -3_money /= -2.f);
-  BOOST_CHECK_EQUAL(1_money, -3_money /= -2.1f);
-  BOOST_CHECK_EQUAL(3_money, -5_money /= -1.9f);
-  BOOST_CHECK_EQUAL(2_money, -5_money /= -2.f);
-  BOOST_CHECK_EQUAL(2_money, -5_money /= -2.1f);
+  CHECK_EQ(1_money, -1_money /= -1.9f);
+  CHECK_EQ(0_money, -1_money /= -2.f);
+  CHECK_EQ(0_money, -1_money /= -2.1f);
+  CHECK_EQ(2_money, -3_money /= -1.9f);
+  CHECK_EQ(2_money, -3_money /= -2.f);
+  CHECK_EQ(1_money, -3_money /= -2.1f);
+  CHECK_EQ(3_money, -5_money /= -1.9f);
+  CHECK_EQ(2_money, -5_money /= -2.f);
+  CHECK_EQ(2_money, -5_money /= -2.1f);
 
   return;
 }
@@ -550,7 +497,7 @@ namespace
   };
 } // namespace
 
-BOOST_AUTO_TEST_CASE(ClassicFormat)
+TEST_CASE("Classic format")
 {
   std::stringstream stream;
 
@@ -558,80 +505,76 @@ BOOST_AUTO_TEST_CASE(ClassicFormat)
          << ' ' << -0.1_money << ' ' << 0.1_money << ' ' << -123456_money << ' ' << 123456_money << ' '
          << -123.456_money << ' ' << 123.456_money;
 
-  BOOST_CHECK_EQUAL("0 0 1 -1 15 -15 -1 1 -123456 123456 -123456 123456", stream.str());
+  CHECK_EQ("0 0 1 -1 15 -15 -1 1 -123456 123456 -123456 123456", stream.str());
 
   return;
 }
 
-BOOST_AUTO_TEST_CASE(Format)
+TEST_CASE("Format")
 {
   std::stringstream stream;
   stream.imbue(std::locale(stream.getloc(), std::make_unique<moneypunct_facet>().release()));
 
-  BOOST_CHECK_NO_THROW(stream << put_money(1.5_money) << ' ' << put_money(-1.5_money) << ' ' << put_money(-123456_money)
-                              << ' ' << put_money(123456_money) << ' ' << put_money(-123.456_money) << ' '
-                              << put_money(123.456_money));
-  BOOST_CHECK_EQUAL("+ 1_5+ - 1_5- - 1-23-45_6- + 1-23-45_6+ - 1-23-45_6- + 1-23-45_6+", stream.str());
+  CHECK_NOTHROW(stream << put_money(1.5_money) << ' ' << put_money(-1.5_money) << ' ' << put_money(-123456_money) << ' '
+                       << put_money(123456_money) << ' ' << put_money(-123.456_money) << ' '
+                       << put_money(123.456_money));
+  CHECK_EQ("+ 1_5+ - 1_5- - 1-23-45_6- + 1-23-45_6+ - 1-23-45_6- + 1-23-45_6+", stream.str());
 
   return;
 }
 
-BOOST_AUTO_TEST_CASE(FormatLeadingZero)
+TEST_CASE("Format leading zero")
 {
-  // gcc is not displaying the leading zero in 0.1 (i prints .1) so both outputs are valid.
-  auto is_either = [](std::string_view ref1, std::string_view ref2,
-                      std::string_view result) -> boost::test_tools::predicate_result
+  std::stringstream stream;
+  stream.imbue(std::locale(stream.getloc(), std::make_unique<moneypunct_facet>().release()));
+
+  CHECK_NOTHROW(stream << put_money(0_money) << ' ' << put_money(-0_money) << ' ' << put_money(1_money) << ' '
+                       << put_money(-1_money) << ' ' << put_money(-0.1_money) << ' ' << put_money(0.1_money));
+
+#ifdef __GNUC__
   {
-    if (result == ref1 || result == ref2) return true;
-
-    boost::test_tools::predicate_result res(false);
-    res.message() << "Result (" << result << ") does not match \"" << ref1 << "\" nor \"" << ref2 << "\".";
-
-    return res;
-  };
-
-  std::stringstream stream;
-  stream.imbue(std::locale(stream.getloc(), std::make_unique<moneypunct_facet>().release()));
-
-  BOOST_CHECK_NO_THROW(stream << put_money(0_money) << ' ' << put_money(-0_money) << ' ' << put_money(1_money) << ' '
-                              << put_money(-1_money) << ' ' << put_money(-0.1_money) << ' ' << put_money(0.1_money));
-  BOOST_TEST_CHECK(
-      is_either("+ _0+ + _0+ + _1+ - _1- - _1- + _1+", "+ 0_0+ + 0_0+ + 0_1+ - 0_1- - 0_1- + 0_1+", stream.str()));
+    CHECK("+ _0+ + _0+ + _1+ - _1- - _1- + _1+" == stream.str());
+  }
+#else
+  {
+    CHECK("+ 0_0+ + 0_0+ + 0_1+ - 0_1- - 0_1- + 0_1+" == stream.str());
+  }
+#endif
 
   return;
 }
 
-BOOST_AUTO_TEST_CASE(ParseClassic)
+TEST_CASE("Parse classic")
 {
   std::stringstream stream;
   stream << "0 1 -1 15 -15 20745 -20745 90000000000000000000 $9";
 
   io1::Money m;
-  BOOST_CHECK_NO_THROW(stream >> m);
-  BOOST_CHECK_EQUAL(0_money, m);
-  BOOST_CHECK_NO_THROW(stream >> m);
-  BOOST_CHECK_EQUAL(1_money, m);
-  BOOST_CHECK_NO_THROW(stream >> m);
-  BOOST_CHECK_EQUAL(-1_money, m);
-  BOOST_CHECK_NO_THROW(stream >> m);
-  BOOST_CHECK_EQUAL(1.5_money, m);
-  BOOST_CHECK_NO_THROW(stream >> m);
-  BOOST_CHECK_EQUAL(-1.5_money, m);
-  BOOST_CHECK_NO_THROW(stream >> m);
-  BOOST_CHECK_EQUAL(2074.5_money, m);
-  BOOST_CHECK_NO_THROW(stream >> m);
-  BOOST_CHECK_EQUAL(-2074.5_money, m);
-  BOOST_CHECK_NO_THROW(stream >> m);
-  BOOST_CHECK_EQUAL(false, static_cast<bool>(stream));
+  CHECK_NOTHROW(stream >> m);
+  CHECK_EQ(0_money, m);
+  CHECK_NOTHROW(stream >> m);
+  CHECK_EQ(1_money, m);
+  CHECK_NOTHROW(stream >> m);
+  CHECK_EQ(-1_money, m);
+  CHECK_NOTHROW(stream >> m);
+  CHECK_EQ(1.5_money, m);
+  CHECK_NOTHROW(stream >> m);
+  CHECK_EQ(-1.5_money, m);
+  CHECK_NOTHROW(stream >> m);
+  CHECK_EQ(2074.5_money, m);
+  CHECK_NOTHROW(stream >> m);
+  CHECK_EQ(-2074.5_money, m);
+  CHECK_NOTHROW(stream >> m);
+  CHECK_EQ(false, static_cast<bool>(stream));
   stream.clear();
-  BOOST_CHECK_NO_THROW(stream >> m);
-  BOOST_CHECK_EQUAL(false, static_cast<bool>(stream));
+  CHECK_NOTHROW(stream >> m);
+  CHECK_EQ(false, static_cast<bool>(stream));
   stream.clear();
 
   return;
 }
 
-BOOST_AUTO_TEST_CASE(Parse)
+TEST_CASE("Parse")
 {
   std::stringstream stream;
   stream << "+ 0_0+ + 0_1+ - 0_1- + _0+ + _1+ - _1- + 1_5+ - 1_5- + 20-74_5+ - 20-74_5- + "
@@ -640,70 +583,70 @@ BOOST_AUTO_TEST_CASE(Parse)
   stream.imbue(std::locale(stream.getloc(), new moneypunct_facet));
 
   io1::Money m;
-  BOOST_CHECK_NO_THROW(stream >> get_money(m));
-  BOOST_CHECK_EQUAL(0_money, m);
-  BOOST_CHECK_NO_THROW(stream >> get_money(m));
-  BOOST_CHECK_EQUAL(1_money, m);
-  BOOST_CHECK_NO_THROW(stream >> get_money(m));
-  BOOST_CHECK_EQUAL(-1_money, m);
-  BOOST_CHECK_NO_THROW(stream >> get_money(m));
-  BOOST_CHECK_EQUAL(0_money, m);
-  BOOST_CHECK_NO_THROW(stream >> get_money(m));
-  BOOST_CHECK_EQUAL(1_money, m);
-  BOOST_CHECK_NO_THROW(stream >> get_money(m));
-  BOOST_CHECK_EQUAL(-1_money, m);
-  BOOST_CHECK_NO_THROW(stream >> get_money(m));
-  BOOST_CHECK_EQUAL(1.5_money, m);
-  BOOST_CHECK_NO_THROW(stream >> get_money(m));
-  BOOST_CHECK_EQUAL(-1.5_money, m);
-  BOOST_CHECK_NO_THROW(stream >> get_money(m));
-  BOOST_CHECK_EQUAL(2074.5_money, m);
-  BOOST_CHECK_NO_THROW(stream >> get_money(m));
-  BOOST_CHECK_EQUAL(-2074.5_money, m);
-  BOOST_CHECK_NO_THROW(stream >> get_money(m));
-  BOOST_CHECK_EQUAL(false, static_cast<bool>(stream));
+  CHECK_NOTHROW(stream >> get_money(m));
+  CHECK_EQ(0_money, m);
+  CHECK_NOTHROW(stream >> get_money(m));
+  CHECK_EQ(1_money, m);
+  CHECK_NOTHROW(stream >> get_money(m));
+  CHECK_EQ(-1_money, m);
+  CHECK_NOTHROW(stream >> get_money(m));
+  CHECK_EQ(0_money, m);
+  CHECK_NOTHROW(stream >> get_money(m));
+  CHECK_EQ(1_money, m);
+  CHECK_NOTHROW(stream >> get_money(m));
+  CHECK_EQ(-1_money, m);
+  CHECK_NOTHROW(stream >> get_money(m));
+  CHECK_EQ(1.5_money, m);
+  CHECK_NOTHROW(stream >> get_money(m));
+  CHECK_EQ(-1.5_money, m);
+  CHECK_NOTHROW(stream >> get_money(m));
+  CHECK_EQ(2074.5_money, m);
+  CHECK_NOTHROW(stream >> get_money(m));
+  CHECK_EQ(-2074.5_money, m);
+  CHECK_NOTHROW(stream >> get_money(m));
+  CHECK_EQ(false, static_cast<bool>(stream));
   stream.clear();
-  BOOST_CHECK_NO_THROW(stream >> get_money(m));
-  BOOST_CHECK_EQUAL(false, static_cast<bool>(stream));
+  CHECK_NOTHROW(stream >> get_money(m));
+  CHECK_EQ(false, static_cast<bool>(stream));
   stream.clear();
 
   return;
 }
 
-BOOST_AUTO_TEST_CASE(Comparisons)
+TEST_CASE("Comparisons")
 {
-  BOOST_TEST_CHECK(1_money == 1_money);
-  BOOST_TEST_CHECK(!(2_money == 1_money));
-  BOOST_TEST_CHECK(1_money == -(-1_money));
-  BOOST_TEST_CHECK(-(-1_money) == 1_money);
-  BOOST_TEST_CHECK(-1_money == -1_money);
+  CHECK(1_money == 1_money);
+  CHECK(!(2_money == 1_money));
+  CHECK(1_money == -(-1_money));
+  CHECK(-(-1_money) == 1_money);
+  CHECK(-1_money == -1_money);
 
-  BOOST_TEST_CHECK(-1_money != 1_money);
-  BOOST_TEST_CHECK(1_money != -1_money);
-  BOOST_TEST_CHECK(!(1_money != 1_money));
-  BOOST_TEST_CHECK(-1_money != 1_money);
+  CHECK(-1_money != 1_money);
+  CHECK(1_money != -1_money);
+  CHECK(!(1_money != 1_money));
+  CHECK(-1_money != 1_money);
 
-  BOOST_TEST_CHECK(-1_money <= 1_money);
-  BOOST_TEST_CHECK(-1_money <= -1_money);
-  BOOST_TEST_CHECK(-1_money < 1_money);
-  BOOST_TEST_CHECK(!(1_money <= -1_money));
-  BOOST_TEST_CHECK(!(1_money < 1_money));
+  CHECK(-1_money <= 1_money);
+  CHECK(-1_money <= -1_money);
+  CHECK(-1_money < 1_money);
+  CHECK(!(1_money <= -1_money));
+  CHECK(!(1_money < 1_money));
 
-  BOOST_TEST_CHECK(1_money >= -1_money);
-  BOOST_TEST_CHECK(1_money >= 1_money);
-  BOOST_TEST_CHECK(1_money > -1_money);
-  BOOST_TEST_CHECK(!(-1_money >= 1_money));
-  BOOST_TEST_CHECK(!(1_money > 1_money));
+  CHECK(1_money >= -1_money);
+  CHECK(1_money >= 1_money);
+  CHECK(1_money > -1_money);
+  CHECK(!(-1_money >= 1_money));
+  CHECK(!(1_money > 1_money));
 
-  BOOST_TEST_CHECK(1_money <= 2_money);
-  BOOST_TEST_CHECK(1_money < 2_money);
-  BOOST_TEST_CHECK(!(2_money < 2_money));
-  BOOST_TEST_CHECK(!(2_money <= 1_money));
+  CHECK(1_money <= 2_money);
+  CHECK(1_money < 2_money);
+  CHECK(!(2_money < 2_money));
+  CHECK(!(2_money <= 1_money));
 
-  BOOST_TEST_CHECK(2_money >= 1_money);
-  BOOST_TEST_CHECK(2_money > 1_money);
-  BOOST_TEST_CHECK(!(2_money > 2_money));
-  BOOST_TEST_CHECK(!(1_money >= 2_money));
+  CHECK(2_money >= 1_money);
+  CHECK(2_money > 1_money);
+  CHECK(!(2_money > 2_money));
+  CHECK(!(1_money >= 2_money));
 
   return;
 }

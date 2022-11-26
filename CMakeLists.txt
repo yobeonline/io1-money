@@ -42,20 +42,21 @@ install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
               "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/io1/cmake)
 
-option(WITH_TESTS "Add a target to build and run unit tests." ON)
+option(WITH_TESTS "Add a target to build and run unit tests. Requires doctest."
+       ON)
 
 if(WITH_TESTS)
   include(CTest)
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 
-  find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+  find_package(doctest CONFIG REQUIRED)
+
   add_executable(test_${PROJECT_NAME} test/test_money.cpp test/tutorial.cpp)
   target_link_libraries(test_${PROJECT_NAME} PRIVATE io1::${PROJECT_NAME}
-                                                     Boost::unit_test_framework)
+                                                     doctest::doctest)
 
   add_test(
     NAME test_${PROJECT_NAME}
-    COMMAND test_${PROJECT_NAME} --catch_system_error=yes --detect_memory_leaks
-            --logger=JUNIT,all,junit_test_${PROJECT_NAME}.xml
-    WORKING_DIRECTORY $<TARGET_FILE_DIR:test_${PROJECT_NAME}>)
+    COMMAND test_${PROJECT_NAME} --reporters=junit
+            --out=junit_test_${PROJECT_NAME}.xml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 endif()

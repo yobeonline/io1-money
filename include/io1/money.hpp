@@ -34,6 +34,10 @@ namespace io1
 
   public:
     Money(void) noexcept = default;
+
+    template <class T>
+    Money(T) = delete;
+
     constexpr Money(Money const &) noexcept = default;
     constexpr Money & operator=(Money const &) noexcept = default;
 
@@ -77,11 +81,12 @@ namespace io1
       return *this;
     };
 
-    Money & operator*=(long double i) noexcept
+    template <std::floating_point T>
+    Money & operator*=(T v) noexcept
     {
       assert((std::fegetround() == FE_TONEAREST) &&
              "Make sure the default rounding mode is active before entering this function.");
-      auto const result = std::llrint(amount_ * i);
+      auto const result = std::llrint(amount_ * static_cast<long double>(v));
       static_assert(sizeof(decltype(result)) == sizeof(decltype(amount_)),
                     "Consider changing the call to std::llrint.");
       amount_ = result;
@@ -91,7 +96,8 @@ namespace io1
     template <std::integral T>
     constexpr Money & operator/=(T i);
 
-    Money & operator/=(long double i) noexcept;
+    template <std::floating_point T>
+    Money & operator/=(T v) noexcept;
 
     [[nodiscard]] constexpr Money operator-(void) const noexcept { return Money{-amount_}; };
     [[nodiscard]] friend constexpr std::strong_ordering operator<=>(Money lhs, Money rhs) noexcept = default;
@@ -134,12 +140,13 @@ namespace io1
     return *this;
   }
 
-  inline Money & Money::operator/=(long double i) noexcept
+  template <std::floating_point T>
+  inline Money & Money::operator/=(T v) noexcept
   {
-    assert(0. != i && "Dividing by zero is undefined behavior.");
+    assert(0. != v && "Dividing by zero is undefined behavior.");
     assert((std::fegetround() == FE_TONEAREST) &&
            "Make sure the default rounding mode is active before entering this function.");
-    auto const result = std::llrint(amount_ / i);
+    auto const result = std::llrint(amount_ / static_cast<long double>(v));
     static_assert(sizeof(decltype(result)) == sizeof(decltype(amount_)), "Consider changing the call to std::llrint.");
     amount_ = result;
 
@@ -155,6 +162,9 @@ namespace io1
     return lhs -= rhs;
   };
 
+  template <class T>
+  constexpr Money operator*(Money lhs, T rhs) = delete;
+
   template <std::integral T>
   [[nodiscard]] constexpr Money operator*(Money lhs, T rhs) noexcept
   {
@@ -167,9 +177,10 @@ namespace io1
     return rhs *= lhs;
   };
 
-  [[nodiscard]] inline Money operator*(long double lhs, Money rhs) noexcept
+  template <std::floating_point T>
+  [[nodiscard]] inline Money operator*(T lhs, Money rhs) noexcept
   {
-    return rhs *= lhs;
+    return rhs *= static_cast<long double>(lhs);
   };
 
   template <std::integral T>
@@ -178,9 +189,10 @@ namespace io1
     return lhs /= rhs;
   };
 
-  [[nodiscard]] inline Money operator/(Money lhs, long double rhs) noexcept
+  template <std::floating_point T>
+  [[nodiscard]] inline Money operator/(Money lhs, T rhs) noexcept
   {
-    return lhs /= rhs;
+    return lhs /= static_cast<long double>(rhs);
   };
 
   // Helper structure to build a io1::Money object from a user-defined string litteral
