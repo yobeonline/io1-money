@@ -1,7 +1,11 @@
 {
   "name": "money",
   "version-string": "latest",
-  "dependencies": [
-    "doctest"
-  ]
+  "dependencies": [],
+  "features": {
+    "tests": {
+      "description": "Unit testing",
+      "dependencies": [ "doctest" ]
+    }
+  }
 }

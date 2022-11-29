@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.20)
 
+option(WITH_TESTS "Add a target to build and run unit tests. Requires doctest."
+       ON)
+
+if(WITH_TESTS)
+  list(APPEND VCPKG_MANIFEST_FEATURES "tests")
+endif()
+
 project(
   money
   VERSION 0.1.0
@@ -41,9 +48,6 @@ install(
 install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
               "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/io1/cmake)
-
-option(WITH_TESTS "Add a target to build and run unit tests. Requires doctest."
-       ON)
 
 if(WITH_TESTS)
   include(CTest)
