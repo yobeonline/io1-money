@@ -19,8 +19,8 @@ jobs:
 
       - name: Configure
         env:
-          CXXFLAGS: --coverage -O0
-          CFLAGS: --coverage -O0
+          CXXFLAGS: --coverage -g -O0
+          CFLAGS: --coverage -g -O0
           LDFLAGS: --coverage
         run: cmake --toolchain ../vcpkg/scripts/buildsystems/vcpkg.cmake -B build -S .
 
@@ -37,7 +37,9 @@ jobs:
           sudo apt-get clean
 
       - name: Create report
-        run: gcovr --xml-pretty --filter include/io1/money.hpp --print-summary -o coverage.xml -r . build
+        run: |
+          mkdir html
+          gcovr --filter include/io1/money.hpp --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x coverage.xml --html-details html/index.html --html-details-syntax-highlighting -r . build
 
       - uses: 5monkeys/cobertura-action@v13
         with:
@@ -48,4 +50,8 @@ jobs:
           show_line: true
           show_branch: true
           show_missing: true
-          
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: detailed coverage report
+          path: html
