@@ -35,51 +35,53 @@ namespace io1
   public:
     Money(void) noexcept = default;
 
-    template <class T>
-    Money(T) = delete;
-
     constexpr Money(Money const &) noexcept = default;
     constexpr Money & operator=(Money const &) noexcept = default;
 
     template <std::integral T>
-    explicit constexpr Money(T amount) noexcept : amount_(static_cast<value_type>(amount)){};
+    explicit constexpr Money(T amount) noexcept : amount_(static_cast<value_type>(amount))
+    {
+    }
+
+    template <std::floating_point T>
+    explicit constexpr Money(T amount) noexcept = delete;
 
     template <char... STR>
     friend constexpr Money(::operator""_money)(void) noexcept;
 
-    [[nodiscard]] constexpr value_type const & data(void) const noexcept { return amount_; };
+    [[nodiscard]] constexpr value_type const & data(void) const noexcept { return amount_; }
 
-    [[nodiscard]] constexpr Money operator++(int) noexcept { return Money{amount_++}; };
-    [[nodiscard]] constexpr Money operator--(int) noexcept { return Money{amount_--}; };
+    [[nodiscard]] constexpr Money operator++(int) noexcept { return Money{amount_++}; }
+    [[nodiscard]] constexpr Money operator--(int) noexcept { return Money{amount_--}; }
 
     constexpr Money & operator++(void) noexcept
     {
       ++amount_;
       return *this;
-    };
+    }
     constexpr Money & operator--(void) noexcept
     {
       --amount_;
       return *this;
-    };
+    }
 
     constexpr Money & operator+=(Money m) noexcept
     {
       amount_ += m.amount_;
       return *this;
-    };
+    }
     constexpr Money & operator-=(Money m) noexcept
     {
       amount_ -= m.amount_;
       return *this;
-    };
+    }
 
     template <std::integral T>
     constexpr Money & operator*=(T i) noexcept
     {
       amount_ *= static_cast<value_type>(i);
       return *this;
-    };
+    }
 
     template <std::floating_point T>
     Money & operator*=(T v) noexcept
@@ -91,7 +93,7 @@ namespace io1
                     "Consider changing the call to std::llrint.");
       amount_ = result;
       return *this;
-    };
+    }
 
     template <std::integral T>
     constexpr Money & operator/=(T i);
@@ -99,14 +101,16 @@ namespace io1
     template <std::floating_point T>
     Money & operator/=(T v) noexcept;
 
-    [[nodiscard]] constexpr Money operator-(void) const noexcept { return Money{-amount_}; };
+    [[nodiscard]] constexpr Money operator-(void) const noexcept { return Money{-amount_}; }
     [[nodiscard]] friend constexpr std::strong_ordering operator<=>(Money lhs, Money rhs) noexcept = default;
 
   public:
     struct [[nodiscard]] InexactDivision : private std::runtime_error
     {
       explicit InexactDivision(value_type dend, value_type dsor) noexcept
-          : std::runtime_error("Cannot perform an inexact division!"), dividend(dend), divisor(dsor){};
+          : std::runtime_error("Cannot perform an inexact division!"), dividend(dend), divisor(dsor)
+      {
+      }
 
       value_type dividend;
       value_type divisor;
@@ -156,11 +160,11 @@ namespace io1
   [[nodiscard]] inline constexpr Money operator+(Money lhs, Money rhs) noexcept
   {
     return lhs += rhs;
-  };
+  }
   [[nodiscard]] inline constexpr Money operator-(Money lhs, Money rhs) noexcept
   {
     return lhs -= rhs;
-  };
+  }
 
   template <class T>
   constexpr Money operator*(Money lhs, T rhs) = delete;
@@ -169,31 +173,31 @@ namespace io1
   [[nodiscard]] constexpr Money operator*(Money lhs, T rhs) noexcept
   {
     return lhs *= rhs;
-  };
+  }
 
   template <std::integral T>
   [[nodiscard]] constexpr Money operator*(T lhs, Money rhs) noexcept
   {
     return rhs *= lhs;
-  };
+  }
 
   template <std::floating_point T>
   [[nodiscard]] inline Money operator*(T lhs, Money rhs) noexcept
   {
     return rhs *= static_cast<long double>(lhs);
-  };
+  }
 
   template <std::integral T>
   [[nodiscard]] constexpr Money operator/(Money lhs, T rhs)
   {
     return lhs /= rhs;
-  };
+  }
 
   template <std::floating_point T>
   [[nodiscard]] inline Money operator/(Money lhs, T rhs) noexcept
   {
     return lhs /= static_cast<long double>(rhs);
-  };
+  }
 
   // Helper structure to build a io1::Money object from a user-defined string litteral
   struct Money::StringLitteralDecoder
@@ -203,7 +207,7 @@ namespace io1
     [[nodiscard]] constexpr static Money apply(void) noexcept
     {
       return Money{parse_mantissa<0, STR...>()};
-    };
+    }
 
   private:
     template <value_type CURRENT_MANTISSA, char DIGIT>
@@ -219,13 +223,13 @@ namespace io1
                     "Number not representable by io1::Money");
 
       return ten * CURRENT_MANTISSA + d;
-    };
+    }
 
     template <char DIGIT>
     [[nodiscard]] constexpr static bool not_a_digit(void) noexcept
     {
       return (DIGIT == '.' || DIGIT == '\'');
-    };
+    }
 
     template <value_type CURRENT_MANTISSA, char DIGIT, char... STR>
     constexpr static value_type parse_mantissa(void) noexcept
@@ -240,20 +244,20 @@ namespace io1
       if constexpr (0 < sizeof...(STR)) return parse_mantissa<new_mantissa, STR...>();
       else
         return new_mantissa;
-    };
+    }
   };
 
   inline std::ostream & operator<<(std::ostream & stream, io1::Money m) noexcept
   {
     return stream << m.data();
-  };
+  }
   inline std::istream & operator>>(std::istream & stream, io1::Money & m)
   {
     io1::Money::value_type amount;
     stream >> amount;
     if (stream) m = io1::Money(amount); // strong guarantee
     return stream;
-  };
+  }
 
   struct Money::GetMoney
   {
@@ -280,7 +284,7 @@ namespace io1
       }
 
       return stream;
-    };
+    }
 
     bool intl_;
     Money::value_type & amount_;
@@ -288,14 +292,14 @@ namespace io1
 
   struct Money::PutMoney
   {
-    explicit PutMoney(Money m, bool intl) noexcept : intl_(intl), amount_(std::to_string(m.data())){};
+    explicit PutMoney(Money m, bool intl) noexcept : intl_(intl), amount_(std::to_string(m.data())) {}
     PutMoney(PutMoney const &) = delete;
     PutMoney & operator=(PutMoney const &) = delete;
 
     friend inline std::ostream & operator<<(std::ostream & stream, PutMoney const & o)
     {
       return stream << std::put_money(o.amount_, o.intl_);
-    };
+    }
 
     bool intl_;
     std::string amount_;
@@ -304,12 +308,12 @@ namespace io1
   [[nodiscard]] inline io1::Money::PutMoney put_money(io1::Money m, bool intl = false) noexcept
   {
     return io1::Money::PutMoney(m, intl);
-  };
+  }
 
   [[nodiscard]] inline io1::Money::GetMoney get_money(io1::Money & m, bool intl = false)
   {
     return io1::Money::GetMoney(m, intl);
-  };
+  }
 
   namespace detail
   {
@@ -335,7 +339,7 @@ namespace io1
     auto const result = std::div(m.data(), divisor);
 
     return {.quot = Money(result.quot), .rem = Money(result.rem)};
-  };
+  }
 
 } // namespace io1
 

@@ -33,7 +33,7 @@ private:
   for (std::size_t i = 0; i < m; ++i) ++plan[i];
 
   return plan;
-};
+}
 
 TEST_CASE("Tutorial")
 {
@@ -42,11 +42,11 @@ TEST_CASE("Tutorial")
   auto const discount_rate = 10. / 100.;
 
   // Parse How many items are bought:
-  std::size_t nb = 0;
+  unsigned int nb = 0;
   std::stringstream("2") >> nb;
 
   // Parse how much tip is given:
-  io1::Money tip;
+  auto tip = 0_money;
   {
     std::stringstream cin("$1.00");
     cin.imbue(std::locale(cin.getloc(), std::make_unique<american_moneypunct_facet>().release()));

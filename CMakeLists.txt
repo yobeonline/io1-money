@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.25)
 
 option(WITH_TESTS "Add a target to build and run unit tests. Requires doctest."
        ON)
