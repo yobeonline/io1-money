@@ -105,7 +105,7 @@ namespace io1
     [[nodiscard]] friend constexpr std::strong_ordering operator<=>(Money lhs, Money rhs) noexcept = default;
 
   public:
-    struct [[nodiscard]] InexactDivision : private std::runtime_error
+    struct [[nodiscard]] InexactDivision : public std::runtime_error
     {
       explicit InexactDivision(value_type dend, value_type dsor) noexcept
           : std::runtime_error("Cannot perform an inexact division!"), dividend(dend), divisor(dsor)

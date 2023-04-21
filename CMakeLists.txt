@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.25)
 
-option(WITH_TESTS "Add a target to build and run unit tests. Requires doctest."
+option(IO1_WITH_TESTS "Add a target to build and run unit tests. Requires doctest."
        ON)
 
-if(WITH_TESTS)
+if(IO1_WITH_TESTS)
   list(APPEND VCPKG_MANIFEST_FEATURES "tests")
 endif()
 
 project(
-  money
+  io1-money
   VERSION 0.1.0
   DESCRIPTION
     "A class to store money amounts for personal accounting applications."
@@ -24,9 +24,9 @@ target_include_directories(
             $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
 
-add_library(io1::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+add_library(io1::money ALIAS ${PROJECT_NAME})
 
-install(TARGETS ${PROJECT_NAME} EXPORT money)
+install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME})
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/io1 DESTINATION include)
 
@@ -34,14 +34,15 @@ include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
   "${PROJECT_NAME}ConfigVersion.cmake"
   VERSION ${PROJECT_VERSION}
-  COMPATIBILITY SameMajorVersion)
+  COMPATIBILITY SameMajorVersion
+  ARCH_INDEPENDENT)
 
 configure_package_config_file(
   "${PROJECT_SOURCE_DIR}/cmake/config.cmake.in" "${PROJECT_NAME}Config.cmake"
   INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/io1/cmake)
 
 install(
-  EXPORT money
+  EXPORT ${PROJECT_NAME}
   NAMESPACE io1::
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/io1/cmake)
 
@@ -49,13 +50,13 @@ install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
               "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/io1/cmake)
 
-if(WITH_TESTS)
+if(IO1_WITH_TESTS)
   include(CTest)
 
   find_package(doctest CONFIG REQUIRED)
 
   add_executable(test_${PROJECT_NAME} test/test_money.cpp test/tutorial.cpp)
-  target_link_libraries(test_${PROJECT_NAME} PRIVATE io1::${PROJECT_NAME}
+  target_link_libraries(test_${PROJECT_NAME} PRIVATE io1::money
                                                      doctest::doctest)
 
   add_test(
