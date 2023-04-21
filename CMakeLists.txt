@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 
-option(IO1_WITH_TESTS "Add a target to build and run unit tests. Requires doctest."
-       ON)
+option(IO1_WITH_TESTS
+       "Add a target to build and run unit tests. Requires doctest." ON)
 
 if(IO1_WITH_TESTS)
   list(APPEND VCPKG_MANIFEST_FEATURES "tests")
@@ -34,8 +34,7 @@ include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
   "${PROJECT_NAME}ConfigVersion.cmake"
   VERSION ${PROJECT_VERSION}
-  COMPATIBILITY SameMajorVersion
-  ARCH_INDEPENDENT)
+  COMPATIBILITY SameMajorVersion ARCH_INDEPENDENT)
 
 configure_package_config_file(
   "${PROJECT_SOURCE_DIR}/cmake/config.cmake.in" "${PROJECT_NAME}Config.cmake"
