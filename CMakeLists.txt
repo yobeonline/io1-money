@@ -28,7 +28,7 @@ add_library(io1::money ALIAS ${PROJECT_NAME})
 
 install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME})
 
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/io1 DESTINATION include)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/io1 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
@@ -38,16 +38,16 @@ write_basic_package_version_file(
 
 configure_package_config_file(
   "${PROJECT_SOURCE_DIR}/cmake/config.cmake.in" "${PROJECT_NAME}Config.cmake"
-  INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/io1/cmake)
+  INSTALL_DESTINATION ${CMAKE_INSTALL_DATADIR}/io1/cmake)
 
 install(
   EXPORT ${PROJECT_NAME}
   NAMESPACE io1::
-  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/io1/cmake)
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/io1/cmake)
 
 install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
               "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/io1/cmake)
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/io1/cmake)
 
 if(IO1_WITH_TESTS)
   include(CTest)
