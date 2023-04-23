@@ -12,7 +12,7 @@ project(
   VERSION 0.1.0
   DESCRIPTION
     "A class to store money amounts for personal accounting applications."
-  HOMEPAGE_URL "https://github.com/yobeonline/money"
+  HOMEPAGE_URL "https://github.com/yobeonline/io1-money"
   LANGUAGES CXX)
 
 include(GNUInstallDirs)
