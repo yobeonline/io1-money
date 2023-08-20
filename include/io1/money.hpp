@@ -5,6 +5,7 @@
 #include <cmath>
 #include <compare>
 #include <concepts>
+#include <cstdint>
 #include <iomanip>
 #include <iosfwd>
 #include <limits>

@@ -1,6 +1,7 @@
 #include "io1/money.hpp"
 
 #include <doctest/doctest.h>
+#include <memory>
 #include <numeric>
 #include <sstream>
 #include <vector>

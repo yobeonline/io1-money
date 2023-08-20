@@ -1,6 +1,7 @@
 #include "io1/money.hpp"
 
 #include <locale>
+#include <memory>
 #include <sstream>
 #include <string_view>
 #include <utility>
