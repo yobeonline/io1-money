@@ -8,6 +8,7 @@ jobs:
       matrix:
         config: [Release, Debug]
         os: [ubuntu-latest, windows-latest]
+        gcc: [13]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -16,18 +17,15 @@ jobs:
       - name: Get latest cmake
         uses: lukka/get-cmake@latest
 
-      - name: set compiler
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          echo "CXX=g++-10" >> $GITHUB_ENV
-          echo "CC=gcc-10" >> $GITHUB_ENV
-
-      - name: Configure Linux
-        if: matrix.os == 'ubuntu-latest'
+      - name: Configure (!Windows)
+        env:
+          CC: gcc-${{ matrix.gcc }}
+          CXX: g++-${{ matrix.gcc }}
+        if: runner.os != 'Windows'
         run: cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} --preset gcc-dev  -B build -S .
 
-      - name: Configure Windows
-        if: matrix.os == 'windows-latest'
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
         run: cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} --preset msvc-dev  -B build -S .
 
       - name: Build
