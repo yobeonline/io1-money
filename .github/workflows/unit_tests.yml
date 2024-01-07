@@ -23,8 +23,8 @@ jobs:
           else()
             set(vcpkg_triplet x64-linux)
             set(compiler_flags "-Wall -Wextra -Wpedantic -Wconversion -Wshadow")
-            set(ENV CC "gcc-13")
-            set(ENV CXX "g++-13")
+            set(ENV{CC} "gcc-13")
+            set(ENV{CXX} "g++-13")
           endif()
           execute_process(
             COMMAND cmake
@@ -37,6 +37,9 @@ jobs:
               --toolchain="$ENV{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
             RESULT_VARIABLE result
           )
+          if (NOT result EQUAL 0)
+            message(FATAL_ERROR "Bad exit status")
+          endif()
 
       - name: Build
         run: cmake --build build --config ${{ matrix.config }} --parallel
