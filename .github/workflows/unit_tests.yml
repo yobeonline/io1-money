@@ -22,7 +22,7 @@ jobs:
           echo "TRIPLET=x64-linux" >> $GITHUB_ENV
         
       - name: Set compiler (windows-latest)
-        if: maxtrix.os == 'windows-latest'
+        if: matrix.os == 'windows-latest'
         run: |
           echo "TRIPLET=x64-windows" >> $GITHUB_ENV
 
