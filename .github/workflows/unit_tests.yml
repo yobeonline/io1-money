@@ -11,24 +11,26 @@ jobs:
         gcc: [13]
     steps:
       - uses: actions/checkout@v2
-        with:
-          submodules: 'true'
 
       - name: Get latest cmake
         uses: lukka/get-cmake@latest
-
-      - name: Configure (!Windows)
+        
+      - name: Set compiler (!Windows)
         env:
           CC: gcc-${{ matrix.gcc }}
           CXX: g++-${{ matrix.gcc }}
+          TRIPLET: x64-linux
         if: runner.os != 'Windows'
-        run: cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} --preset gcc-dev  -B build -S .
-
-      - name: Configure (Windows)
+        
+      - name: Set compiler (Windows)
+        env:
+          TRIPLET: x64-windows
         if: runner.os == 'Windows'
-        run: cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} --preset msvc-dev  -B build -S .
 
-      - name: Build
+      - name: Configure
+        run: cmake -B build -S . -A x64 -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DVCPKG_TARGET_TRIPLET=${TRIPLET} --toolchain=${VCPKG_INSTALLATION_ROOT}\scripts\buildsystems\vcpkg.cmake
+
+       - name: Build
         run: cmake --build build --config ${{ matrix.config }} --parallel
 
       - name: Execute
