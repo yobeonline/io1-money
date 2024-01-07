@@ -14,20 +14,29 @@ jobs:
       - name: Get latest cmake
         uses: lukka/get-cmake@latest
         
-      - name: Set compiler (ubuntu-latest)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          echo "CC=gcc-13" >> $GITHUB_ENV
-          echo "CXX=g++-13" >> $GITHUB_ENV
-          echo "TRIPLET=x64-linux" >> $GITHUB_ENV
-        
-      - name: Set compiler (windows-latest)
-        if: matrix.os == 'windows-latest'
-        run: |
-          echo "TRIPLET=x64-windows" >> $GITHUB_ENV
-
       - name: Configure
-        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DVCPKG_TARGET_TRIPLET=${TRIPLET} --toolchain="${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        shell: cmake -P {0}
+        run: |
+          if ("${{ matrix.os }}" STREQUAL "windows-latest")
+            set(vcpkg_triplet x64-windows)
+            set(compiler_flags "/EHsc /W4")
+          else()
+            set(vcpkg_triplet x64-linux)
+            set(compiler_flags "-Wall -Wextra -Wpedantic -Wconversion -Wshadow")
+            set(ENV CC "gcc-13")
+            set(ENV CXX "g++-13")
+          endif()
+          execute_process(
+            COMMAND cmake
+              -S .
+              -B build
+              -D CMAKE_BUILD_TYPE=${{ matrix.config}}
+              -D VCPKG_TARGET_TRIPLET=${vcpkg_triplet}
+              -D "CMAKE_C_FLAGS=${compiler_flags}"
+              -D "CMAKE_CXX_FLAGS=${compiler_flags}"
+              --toolchain="$ENV{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            RESULT_VARIABLE result
+          )
 
       - name: Build
         run: cmake --build build --config ${{ matrix.config }} --parallel
