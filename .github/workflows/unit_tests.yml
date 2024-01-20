@@ -17,7 +17,7 @@ jobs:
       - name: Configure
         shell: cmake -P {0}
         run: |
-          file(GLOB LISTT "$ENV{VCPKG_INSTALLATION_ROOT}")
+          file(GLOB LISTT "$ENV{VCPKG_INSTALLATION_ROOT}" *)
           message("${LISTT}")
           if ("${{ matrix.os }}" STREQUAL "windows-latest")
             set(vcpkg_triplet x64-windows)
