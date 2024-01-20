@@ -36,7 +36,7 @@ jobs:
               -D VCPKG_TARGET_TRIPLET=${vcpkg_triplet}
               -D "CMAKE_C_FLAGS=${compiler_flags}"
               -D "CMAKE_CXX_FLAGS=${compiler_flags}"
-              --toolchain="$ENV{VCPKG_INSTALLATION_ROOT}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+              --toolchain "$ENV{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
             RESULT_VARIABLE result
           )
           if (NOT result EQUAL 0)
