@@ -21,27 +21,29 @@ jobs:
           gcovr --version
 
       - name: Configure
-        run: cmake -S . -B . -D CMAKE_CXX_COMPILER=g++-13 -D "CMAKE_CXX_FLAGS=--coverage -g -O0" -D VCPKG_TARGET_TRIPLET=x64-linux --toolchain "${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        run: cmake -S . -B build -D CMAKE_CXX_COMPILER=g++-13 -D "CMAKE_CXX_FLAGS=--coverage -g -O0" -D VCPKG_TARGET_TRIPLET=x64-linux --toolchain "${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
 
       - name: Build
-        run: cmake --build . --parallel
+        run: cmake --build build --parallel
 
       - name: Execute
-        run: ctest
+        run: ctest --test-dir build
 
       - name: Create report
         run: |
+          pushd build
           mkdir html
-          gcovr --filter include/io1/money.hpp --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x coverage.xml --html-details html/index.html --html-details-syntax-highlighting -r . .
+          gcovr --filter include/io1/money.hpp --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x coverage.xml --html-details html/index.html --html-details-syntax-highlighting -r .. .
+          popd
 
       - uses: actions/upload-artifact@v3
         with:
           name: detailed coverage report
-          path: html
+          path: build/html
 
       - uses: 5monkeys/cobertura-action@v13
         with:
-          path: coverage.xml
+          path: build/coverage.xml
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           minimum_coverage: 84
           fail_below_threshold: true
