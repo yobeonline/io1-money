@@ -21,18 +21,18 @@ jobs:
           gcovr --version
 
       - name: Configure
-        run: cmake -S . -B build -D CMAKE_CXX_COMPILER=g++-13 -D "CMAKE_CXX_FLAGS=--coverage -g -O0" -D VCPKG_TARGET_TRIPLET=x64-linux --toolchain "${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        run: cmake -S . -B . -D CMAKE_CXX_COMPILER=g++-13 -D "CMAKE_CXX_FLAGS=--coverage -g -O0" -D VCPKG_TARGET_TRIPLET=x64-linux --toolchain "${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
 
       - name: Build
-        run: cmake --build build --parallel
+        run: cmake --build . --parallel
 
       - name: Execute
-        run: ctest --test-dir build
+        run: ctest
 
       - name: Create report
         run: |
           mkdir html
-          gcovr --filter include/io1/money.hpp --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x coverage.xml --html-details html/index.html --html-details-syntax-highlighting -r . build
+          gcovr --filter include/io1/money.hpp --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x coverage.xml --html-details html/index.html --html-details-syntax-highlighting -r . .
 
       - uses: actions/upload-artifact@v3
         with:
