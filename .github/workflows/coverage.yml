@@ -15,14 +15,17 @@ jobs:
       - name: Install gcovr
         run: |
           sudo apt-get update
-          sudo apt-get install -yq gcovr
+          sudo apt-get install -yq python3-pip
           sudo apt-get clean
+          pip install gcovr
+          gcovr --version
+          gcov --version
 
       - name: Configure
         run: cmake -S . -B build -D VCPKG_TARGET_TRIPLET=x64-linux --toolchain "${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
         env:
-          CXXFLAGS: --coverage -g -O0
-          CFLAGS: --coverage -g -O0
+          CXXFLAGS: --coverage -fprofile-abs-path -O0
+          CFLAGS: --coverage -fprofile-abs-path -O0
           LDFLAGS: --coverage
           CC: gcc-13
           CXX: g++-13
