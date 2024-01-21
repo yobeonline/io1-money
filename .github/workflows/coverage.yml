@@ -31,10 +31,8 @@ jobs:
 
       - name: Create report
         run: |
-          pushd build
-          mkdir html
-          gcovr -v --filter include/io1/money.hpp --gcov-filter build/CMakeFiles/.*io1-money.* --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x coverage.xml --html-details html/index.html --html-details-syntax-highlighting -r .. .
-          popd
+          mkdir build/html
+          gcovr -v --filter include/io1/money.hpp --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x build/coverage.xml --html-details build/html/index.html --html-details-syntax-highlighting -r . build
 
       - uses: actions/upload-artifact@v3
         with:
