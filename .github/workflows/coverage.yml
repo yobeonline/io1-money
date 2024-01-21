@@ -6,8 +6,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: 'true'
 
       - name: Get latest cmake
         uses: lukka/get-cmake@latest
@@ -22,13 +20,13 @@ jobs:
           gcov --version
 
       - name: Configure
-        run: cmake -S . -B build -D VCPKG_TARGET_TRIPLET=x64-linux --toolchain "${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
         env:
-          CXXFLAGS: --coverage -fprofile-abs-path -O0
-          CFLAGS: --coverage -fprofile-abs-path -O0
+          CXXFLAGS: --coverage -fprofile-abs-path -g -O0
+          CFLAGS: --coverage -fprofile-abs-path -g -O0
           LDFLAGS: --coverage
           CC: gcc-13
           CXX: g++-13
+        run: cmake -S . -B build -D VCPKG_TARGET_TRIPLET=x64-linux --toolchain "${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
 
       - name: Build
         run: cmake --build build --parallel
