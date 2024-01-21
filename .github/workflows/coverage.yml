@@ -38,7 +38,7 @@ jobs:
         run: cmake --build build --parallel
 
       - name: Execute
-        run: cmake --build build --target test
+        run: ctest --test-dir build
 
       - name: Install gcovr
         run: |
