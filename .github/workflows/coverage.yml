@@ -12,9 +12,6 @@ jobs:
 
       - name: Install gcovr
         run: |
-          sudo apt-get update
-          sudo apt-get install -yq python3-pip
-          sudo apt-get clean
           pip install gcovr
           gcovr --version
           gcov --version
@@ -37,7 +34,8 @@ jobs:
       - name: Create report
         run: |
           mkdir build/html
-          gcovr -v --filter include/io1/money.hpp --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x build/coverage.xml --html-details build/html/index.html --html-details-syntax-highlighting -r . build
+          which gcov
+          gcovr -v --gcov-executable /usr/bin/gcov --filter include/io1/money.hpp --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x build/coverage.xml --html-details build/html/index.html --html-details-syntax-highlighting -r . build
 
       - uses: actions/upload-artifact@v3
         with:
