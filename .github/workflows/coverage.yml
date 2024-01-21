@@ -23,8 +23,8 @@ jobs:
       - name: Configure
         run: cmake -S . -B build -D VCPKG_TARGET_TRIPLET=x64-linux --toolchain "${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
         env:
-          CXXFLAGS: --coverage
-          CFLAGS: --coverage
+          CXXFLAGS: --coverage -g -O0
+          CFLAGS: --coverage -g -O0
           LDFLAGS: --coverage
           CC: gcc-13
           CXX: g++-13
