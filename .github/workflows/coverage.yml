@@ -33,7 +33,7 @@ jobs:
         run: |
           pushd build
           mkdir html
-          gcovr --filter include/io1/money.hpp --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x coverage.xml --html-details html/index.html --html-details-syntax-highlighting -r .. .
+          gcovr --filter include/io1/money.hpp --gcov-filter build/CMakeFiles/.*io1-money.* --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x coverage.xml --html-details html/index.html --html-details-syntax-highlighting -r .. .
           popd
 
       - uses: actions/upload-artifact@v3
