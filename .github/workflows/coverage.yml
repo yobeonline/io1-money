@@ -21,8 +21,8 @@ jobs:
 
       - name: Configure
         env:
-          CXXFLAGS: --coverage -fprofile-abs-path -g -O0
-          CFLAGS: --coverage -fprofile-abs-path -g -O0
+          CXXFLAGS: --coverage -fprofile-abs-path -g -O1
+          CFLAGS: --coverage -fprofile-abs-path -g -O1
           LDFLAGS: --coverage
           CC: gcc-13
           CXX: g++-13
