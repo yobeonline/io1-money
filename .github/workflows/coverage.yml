@@ -31,6 +31,11 @@ jobs:
       - name: Execute
         run: ctest --test-dir build
 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: sample gcda
+          path: build/CMakeFiles/test_io1-money.dir/test/tutorial.cpp.gcda
+
       - name: Create report
         run: |
           mkdir build/html
