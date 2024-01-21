@@ -16,10 +16,10 @@ jobs:
         run: cmake -S . -B . -D CMAKE_CXX_COMPILER=g++-13 -D "CMAKE_CXX_FLAGS=--coverage -g -O0" -D VCPKG_TARGET_TRIPLET=x64-linux --toolchain "${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
 
       - name: Build
-        run: cmake --build build --parallel
+        run: cmake --build . --parallel
 
       - name: Execute
-        run: ctest --test-dir build
+        run: ctest
 
       - name: Generate a code coverage report
         uses: threeal/gcovr-action@v1.0.0
