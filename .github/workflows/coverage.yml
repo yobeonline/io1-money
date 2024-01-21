@@ -15,11 +15,8 @@ jobs:
       - name: Install gcovr
         run: |
           sudo apt-get update
-          sudo apt-get install -yq python3-pip
+          sudo apt-get install -yq gcovr
           sudo apt-get clean
-          pip install gcovr
-          gcovr --version
-          gcov --version
 
       - name: Configure
         run: cmake -S . -B build -D VCPKG_TARGET_TRIPLET=x64-linux --toolchain "${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
