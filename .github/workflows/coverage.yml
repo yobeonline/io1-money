@@ -17,6 +17,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -yq gcovr
           sudo apt-get clean
+          gcovr --version
 
       - name: Configure
         run: cmake -S . -B build -D CMAKE_CXX_COMPILER=g++-13 -D "CMAKE_CXX_FLAGS=--coverage -g -O0" -D VCPKG_TARGET_TRIPLET=x64-linux --toolchain "${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
