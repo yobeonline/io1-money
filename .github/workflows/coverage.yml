@@ -5,24 +5,34 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: 'true'
 
       - name: Get latest cmake
         uses: lukka/get-cmake@latest
 
-      - name: set compiler
-        run: |
-          echo "CXX=g++-10" >> $GITHUB_ENV
-          echo "CC=gcc-10" >> $GITHUB_ENV
-
       - name: Configure
-        env:
-          CXXFLAGS: --coverage -g -O0
-          CFLAGS: --coverage -g -O0
-          LDFLAGS: --coverage
-        run: cmake --toolchain ../vcpkg/scripts/buildsystems/vcpkg.cmake -B build -S .
+        shell: cmake -P {0}
+        run: |
+          set(vcpkg_triplet x64-linux)
+          set(compiler_flags "--coverage -g -O0")
+          set(linker_flags "--coverage")
+          set(ENV{CC} "gcc-13")
+          set(ENV{CXX} "g++-13")
+          execute_process(
+            COMMAND cmake
+              -S .
+              -B build
+              -D VCPKG_TARGET_TRIPLET=${vcpkg_triplet}
+              -D "CMAKE_CXX_FLAGS=${compiler_flags}"
+              -D "CMAKE_LD_FLAGS=${linker_flags}"
+              --toolchain "$ENV{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            RESULT_VARIABLE result
+          )
+          if (NOT result EQUAL 0)
+            message(FATAL_ERROR "Bad exit status")
+          endif()
 
       - name: Build
         run: cmake --build build --parallel
