@@ -4,6 +4,9 @@ on: [push]
 jobs:
   coverage:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      content: read
     steps:
       - uses: actions/checkout@v4
 
