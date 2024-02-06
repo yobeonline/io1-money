@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
-      content: read
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
