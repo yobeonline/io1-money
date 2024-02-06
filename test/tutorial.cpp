@@ -6,6 +6,8 @@
 #include <sstream>
 #include <vector>
 
+using namespace io1::literals;
+
 class american_moneypunct_facet : public std::moneypunct<char, false>
 {
 private:

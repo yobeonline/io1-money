@@ -9,6 +9,8 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 
+using namespace io1::literals;
+
 TEST_CASE("Value bounds")
 {
   [[maybe_unused]] constexpr auto max = 9'223'372'036'854'775'807_money;

@@ -17,14 +17,6 @@
 
 namespace io1
 {
-  class money;
-}
-
-template <char... STR>
-constexpr io1::money operator""_money(void) noexcept;
-
-namespace io1
-{
   class money
   {
   public:
@@ -48,9 +40,6 @@ namespace io1
 
     template <std::floating_point T>
     explicit constexpr money(T amount) noexcept = delete;
-
-    template <char... STR>
-    friend constexpr money(::operator""_money)(void) noexcept;
 
     [[nodiscard]] constexpr value_type const & data(void) const noexcept { return amount_; }
 
@@ -120,7 +109,6 @@ namespace io1
     };
 
   private:
-    struct StringLitteralDecoder;
     struct PutMoney;
     struct GetMoney;
 
@@ -203,52 +191,54 @@ namespace io1
   }
 
   // Helper structure to build a io1::Money object from a user-defined string litteral
-  struct money::StringLitteralDecoder
-  {
-  public:
-    template <char... STR>
-    [[nodiscard]] constexpr static money apply(void) noexcept
+  namespace detail {
+    struct StringLitteralDecoder
     {
-      return money{parse_mantissa<0, STR...>()};
-    }
-
-  private:
-    template <value_type CURRENT_MANTISSA, char DIGIT>
-    [[nodiscard]] constexpr static value_type parse_digit(void) noexcept
-    {
-      static_assert('0' <= DIGIT && '9' >= DIGIT, "Unexpected digit!");
-
-      constexpr auto d = static_cast<value_type>(DIGIT - '0');
-      constexpr auto ten = static_cast<value_type>(10);
-
-      static_assert(CURRENT_MANTISSA >= 0, "Parsing a raw user-defined litteral.");
-      static_assert((std::numeric_limits<value_type>::max() - d) / ten >= CURRENT_MANTISSA,
-                    "Number not representable by io1::Money");
-
-      return ten * CURRENT_MANTISSA + d;
-    }
-
-    template <char DIGIT>
-    [[nodiscard]] constexpr static bool not_a_digit(void) noexcept
-    {
-      return (DIGIT == '.' || DIGIT == '\'');
-    }
-
-    template <value_type CURRENT_MANTISSA, char DIGIT, char... STR>
-    constexpr static value_type parse_mantissa(void) noexcept
-    {
-      constexpr auto new_mantissa = []()
+    public:
+      template <char... STR>
+      [[nodiscard]] constexpr static money apply(void) noexcept
       {
-        if constexpr (not_a_digit<DIGIT>()) return CURRENT_MANTISSA;
-        else
-          return parse_digit<CURRENT_MANTISSA, DIGIT>();
-      }();
+        return money{parse_mantissa<0, STR...>()};
+      }
 
-      if constexpr (0 < sizeof...(STR)) return parse_mantissa<new_mantissa, STR...>();
-      else
-        return new_mantissa;
-    }
-  };
+    private:
+      template <money::value_type CURRENT_MANTISSA, char DIGIT>
+      [[nodiscard]] constexpr static money::value_type parse_digit(void) noexcept
+      {
+        static_assert('0' <= DIGIT && '9' >= DIGIT, "Unexpected digit!");
+
+        constexpr auto d = static_cast<money::value_type>(DIGIT - '0');
+        constexpr auto ten = static_cast<money::value_type>(10);
+
+        static_assert(CURRENT_MANTISSA >= 0, "Parsing a raw user-defined litteral.");
+        static_assert((std::numeric_limits<money::value_type>::max() - d) / ten >= CURRENT_MANTISSA,
+                      "Number not representable by io1::Money");
+
+        return ten * CURRENT_MANTISSA + d;
+      }
+
+      template <char DIGIT>
+      [[nodiscard]] constexpr static bool not_a_digit(void) noexcept
+      {
+        return (DIGIT == '.' || DIGIT == '\'');
+      }
+
+      template <money::value_type CURRENT_MANTISSA, char DIGIT, char... STR>
+      constexpr static money::value_type parse_mantissa(void) noexcept
+      {
+        constexpr auto new_mantissa = []()
+        {
+          if constexpr (not_a_digit<DIGIT>()) return CURRENT_MANTISSA;
+          else
+            return parse_digit<CURRENT_MANTISSA, DIGIT>();
+        }();
+
+        if constexpr (0 < sizeof...(STR)) return parse_mantissa<new_mantissa, STR...>();
+        else
+          return new_mantissa;
+      }
+    };
+  } // detail
 
   inline std::ostream & operator<<(std::ostream & stream, io1::money m) noexcept
   {
@@ -344,13 +334,15 @@ namespace io1
     return {.quot = money(result.quot), .rem = money(result.rem)};
   }
 
+  inline namespace literals
+  {
+    template <char... STR>
+    constexpr io1::money operator""_money(void) noexcept
+    {
+      return io1::detail::StringLitteralDecoder::apply<STR...>();
+    }
+  }
 } // namespace io1
-
-template <char... STR>
-constexpr io1::money operator""_money(void) noexcept
-{
-  return io1::money::StringLitteralDecoder::apply<STR...>();
-}
 
 template <class CharT>
 struct std::formatter<io1::money, CharT>
