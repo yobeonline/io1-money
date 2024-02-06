@@ -51,9 +51,8 @@ jobs:
           thresholds: '75 90'
 
       - name: Add Coverage PR Comment
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: mshick/add-pr-comment@v2
         with:
-          header: coverage
-          recreate: true
-          path: code-coverage-results.md
-          number: ${{github.event.issue.number}}
+          message-id: coverage
+          refresh-message-position: true
+          message-path: code-coverage-results.md
