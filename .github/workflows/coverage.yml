@@ -11,10 +11,7 @@ jobs:
         uses: lukka/get-cmake@latest
 
       - name: Install gcovr
-        run: |
-          pip install gcovr
-          gcovr --version
-          gcov --version
+        run: pip install gcovr
 
       - name: Configure
         env:
@@ -39,8 +36,7 @@ jobs:
       - name: Create report
         run: |
           mkdir build/html
-          which gcov
-          gcovr -v --gcov-executable /usr/bin/gcov --filter include/io1/money.hpp --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x build/coverage.xml --html-details build/html/index.html --html-details-syntax-highlighting -r . build
+          gcovr -v --gcov-executable /usr/bin/gcov-13 --filter include/io1/money.hpp --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x build/coverage.xml --html-details build/html/index.html --html-details-syntax-highlighting -r . build
 
       - uses: actions/upload-artifact@v3
         with:
