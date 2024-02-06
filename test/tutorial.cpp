@@ -20,7 +20,7 @@ private:
   pattern do_neg_format() const override { return {symbol, sign, value}; };
 };
 
-[[nodiscard]] auto compute_installment_plan(io1::Money price, std::size_t count) noexcept
+[[nodiscard]] auto compute_installment_plan(io1::money price, std::size_t count) noexcept
 {
   assert(0 != count && "Not doing a plan for no payment.");
 
@@ -28,7 +28,7 @@ private:
   assert(div_result.rem >= 0_money && "Count was unsigned.");
 
   auto const m = static_cast<std::size_t>(div_result.rem.data());
-  std::vector<io1::Money> plan(count, div_result.quot);
+  std::vector<io1::money> plan(count, div_result.quot);
   assert(m < plan.size() && "As per the io1::div documentation since plan.size() is count.");
 
   for (std::size_t i = 0; i < m; ++i) ++plan[i];
