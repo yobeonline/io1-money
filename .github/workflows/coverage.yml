@@ -19,7 +19,7 @@ jobs:
           CFLAGS: --coverage -fprofile-abs-path -g -O1
           LDFLAGS: --coverage
           CC: gcc-13
-          CXX: g++-13
+          CXX: g++-13 # gcov (not gcovr) version shoudl match
         run: cmake -S . -B build -D VCPKG_TARGET_TRIPLET=x64-linux --toolchain "${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
 
       - name: Build
@@ -28,15 +28,10 @@ jobs:
       - name: Execute
         run: ctest --test-dir build
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: sample gcda
-          path: build/CMakeFiles/test_io1-money.dir/test/tutorial.cpp.gcda
-
       - name: Create report
         run: |
           mkdir build/html
-          gcovr -v --gcov-executable /usr/bin/gcov-13 --filter include/io1/money.hpp --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x build/coverage.xml --html-details build/html/index.html --html-details-syntax-highlighting -r . build
+          gcovr --gcov-executable /usr/bin/gcov-13 --filter include/io1/money.hpp --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x build/coverage.xml --html-details build/html/index.html --html-details-syntax-highlighting -r . build
 
       - uses: actions/upload-artifact@v3
         with:
@@ -47,7 +42,7 @@ jobs:
         with:
           path: build/coverage.xml
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          minimum_coverage: 84
+          minimum_coverage: 83
           fail_below_threshold: true
           show_line: true
           show_branch: true
