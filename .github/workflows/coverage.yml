@@ -38,11 +38,6 @@ jobs:
           name: detailed coverage report
           path: build/html
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: cobertura file
-          path: build/coverage.xml
-
       - uses: 5monkeys/cobertura-action@v13
         with:
           path: build/coverage.xml
