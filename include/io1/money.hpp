@@ -191,7 +191,8 @@ namespace io1
   }
 
   // Helper structure to build a io1::Money object from a user-defined string litteral
-  namespace detail {
+  namespace detail
+  {
     struct StringLitteralDecoder
     {
     public:
@@ -238,7 +239,7 @@ namespace io1
           return new_mantissa;
       }
     };
-  } // detail
+  } // namespace detail
 
   inline std::ostream & operator<<(std::ostream & stream, io1::money m) noexcept
   {
@@ -341,7 +342,7 @@ namespace io1
     {
       return io1::detail::StringLitteralDecoder::apply<STR...>();
     }
-  }
+  } // namespace literals
 } // namespace io1
 
 template <class CharT>
