@@ -18,10 +18,10 @@ TEST_CASE("Value bounds")
 TEST_CASE("Constexpr functions")
 {
   {
-    [[maybe_unused]] constexpr io1::Money m(1_money);
+    [[maybe_unused]] constexpr io1::money m(1_money);
   }
   {
-    [[maybe_unused]] constexpr io1::Money m = 1_money;
+    [[maybe_unused]] constexpr io1::money m = 1_money;
   }
   {
     [[maybe_unused]] constexpr auto m = 1_money ++;
@@ -102,9 +102,9 @@ TEST_CASE("Constexpr functions")
 
 TEST_CASE("Constructors")
 {
-  CHECK_EQ(0, io1::Money(0).data());
-  CHECK_EQ(20, io1::Money(20).data());
-  CHECK_EQ(-20, io1::Money(-20).data());
+  CHECK_EQ(0, io1::money(0).data());
+  CHECK_EQ(20, io1::money(20).data());
+  CHECK_EQ(-20, io1::money(-20).data());
 }
 
 TEST_CASE("Literal constructions")
@@ -191,7 +191,7 @@ TEST_CASE("Arithmetic")
   CHECK_EQ(-2_money, 4_money /= -2);
   CHECK_EQ(0_money, 0_money /= -2);
 
-  CHECK_THROWS_AS(4_money /= 3, io1::Money::InexactDivision);
+  CHECK_THROWS_AS(4_money /= 3, io1::money::InexactDivision);
 
   {
     auto m = 4_money;
@@ -199,7 +199,7 @@ TEST_CASE("Arithmetic")
     {
       m /= 3;
     }
-    catch (io1::Money::InexactDivision const & e)
+    catch (io1::money::InexactDivision const & e)
     {
       CHECK_EQ(4, e.dividend);
       CHECK_EQ(3, e.divisor);
@@ -207,7 +207,7 @@ TEST_CASE("Arithmetic")
     }
   }
 
-  CHECK_THROWS_AS([[maybe_unused]] auto const m = 4_money / 3, io1::Money::InexactDivision);
+  CHECK_THROWS_AS([[maybe_unused]] auto const m = 4_money / 3, io1::money::InexactDivision);
 
   {
     auto m = 4_money;
@@ -215,7 +215,7 @@ TEST_CASE("Arithmetic")
     {
       [[maybe_unused]] auto const m2 = m / 3;
     }
-    catch (io1::Money::InexactDivision const & e)
+    catch (io1::money::InexactDivision const & e)
     {
       CHECK_EQ(4, e.dividend);
       CHECK_EQ(3, e.divisor);
@@ -708,7 +708,7 @@ TEST_CASE("Parse classic")
   std::stringstream stream;
   stream << "0 1 -1 15 -15 20745 -20745 90000000000000000000 $9";
 
-  io1::Money m;
+  io1::money m;
   CHECK_NOTHROW(stream >> m);
   CHECK_EQ(0_money, m);
   CHECK_NOTHROW(stream >> m);
@@ -741,7 +741,7 @@ TEST_CASE("Parse")
 
   stream.imbue(std::locale(stream.getloc(), new moneypunct_facet));
 
-  io1::Money m;
+  io1::money m;
   CHECK_NOTHROW(stream >> get_money(m));
   CHECK_EQ(0_money, m);
   CHECK_NOTHROW(stream >> get_money(m));
