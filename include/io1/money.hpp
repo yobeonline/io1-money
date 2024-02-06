@@ -341,7 +341,7 @@ namespace io1
 
     auto const result = std::div(m.data(), divisor);
 
-    return {.quot = Money(result.quot), .rem = Money(result.rem)};
+    return {.quot = money(result.quot), .rem = money(result.rem)};
   }
 
 } // namespace io1
