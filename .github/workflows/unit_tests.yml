@@ -8,27 +8,50 @@ jobs:
       matrix:
         config: [Release, Debug]
         os: [ubuntu-latest, windows-latest]
+        compiler: [gcc, clang, msvc]
+        exclude:
+          - os: windows-latest
+            compiler: gcc
+          - os: windows-latest
+            compiler: clang
+          - os: ubuntu-latest
+            compiler: msvc
     steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: 'true'
+      - uses: actions/checkout@v4
 
       - name: Get latest cmake
         uses: lukka/get-cmake@latest
-
-      - name: set compiler
-        if: matrix.os == 'ubuntu-latest'
+        
+      - name: Configure
+        shell: cmake -P {0}
         run: |
-          echo "CXX=g++-10" >> $GITHUB_ENV
-          echo "CC=gcc-10" >> $GITHUB_ENV
-
-      - name: Configure Linux
-        if: matrix.os == 'ubuntu-latest'
-        run: cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} --preset gcc-dev  -B build -S .
-
-      - name: Configure Windows
-        if: matrix.os == 'windows-latest'
-        run: cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} --preset msvc-dev  -B build -S .
+          if ("${{ matrix.compiler }}" STREQUAL "msvc")
+            set(vcpkg_triplet x64-windows)
+            set(compiler_flags "/EHsc /W4")
+          else()
+            set(vcpkg_triplet x64-linux)
+            set(compiler_flags "-Wall -Wextra -Wpedantic -Wconversion -Wshadow")
+            if ("${{ matrix.compiler }}" STREQUAL "gcc")
+              set(ENV{CC} "gcc-13")
+              set(ENV{CXX} "g++-13")
+            else()
+              set(ENV{CC} "clang-15")
+              set(ENV{CXX} "clang++-15")
+            endif()
+          endif()
+          execute_process(
+            COMMAND cmake
+              -S .
+              -B build
+              -D CMAKE_BUILD_TYPE=${{ matrix.config }}
+              -D VCPKG_TARGET_TRIPLET=${vcpkg_triplet}
+              -D "CMAKE_CXX_FLAGS=${compiler_flags}"
+              --toolchain "$ENV{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            RESULT_VARIABLE result
+          )
+          if (NOT result EQUAL 0)
+            message(FATAL_ERROR "Bad exit status")
+          endif()
 
       - name: Build
         run: cmake --build build --config ${{ matrix.config }} --parallel
@@ -39,4 +62,4 @@ jobs:
       - name: Publish test report
         uses: mikepenz/action-junit-report@v3
         with:
-          report_paths: 'build/bin/junit_*.xml'
+          report_paths: 'build/junit_*.xml'

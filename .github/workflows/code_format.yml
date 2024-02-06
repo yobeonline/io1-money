@@ -5,8 +5,7 @@ jobs:
   cmake-format:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Format CMake files
         uses: PuneetMatharu/cmake-format-lint-action@v1.0.1
@@ -17,9 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Run clang-format style check for C/C++/Protobuf programs.
-        uses: jidicula/clang-format-action@v4.5.0
+        uses: jidicula/clang-format-action@v4.11.0
         with:
-          clang-format-version: '14'
+          clang-format-version: '17'

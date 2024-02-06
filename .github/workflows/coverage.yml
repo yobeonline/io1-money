@@ -4,54 +4,55 @@ on: [push]
 jobs:
   coverage:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
     steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: 'true'
+      - uses: actions/checkout@v4
 
       - name: Get latest cmake
         uses: lukka/get-cmake@latest
 
-      - name: set compiler
-        run: |
-          echo "CXX=g++-10" >> $GITHUB_ENV
-          echo "CC=gcc-10" >> $GITHUB_ENV
+      - name: Install gcovr
+        run: pip install gcovr
 
       - name: Configure
         env:
-          CXXFLAGS: --coverage -g -O0
-          CFLAGS: --coverage -g -O0
+          CXXFLAGS: --coverage -fprofile-abs-path -g -O1
+          CFLAGS: --coverage -fprofile-abs-path -g -O1
           LDFLAGS: --coverage
-        run: cmake --toolchain ../vcpkg/scripts/buildsystems/vcpkg.cmake -B build -S .
+          CC: gcc-13
+          CXX: g++-13 # gcov (!= gcovr) version should match
+        run: cmake -S . -B build -D VCPKG_TARGET_TRIPLET=x64-linux --toolchain "${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
 
       - name: Build
         run: cmake --build build --parallel
 
       - name: Execute
-        run: cmake --build build --target test
-
-      - name: Install gcovr
-        run: |
-          sudo apt-get update
-          sudo apt-get install -yq gcovr
-          sudo apt-get clean
+        run: ctest --test-dir build
 
       - name: Create report
         run: |
-          mkdir html
-          gcovr --filter include/io1/money.hpp --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x coverage.xml --html-details html/index.html --html-details-syntax-highlighting -r . build
-
-      - uses: 5monkeys/cobertura-action@v13
-        with:
-          path: coverage.xml
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          minimum_coverage: 84
-          fail_below_threshold: true
-          show_line: true
-          show_branch: true
-          show_missing: true
+          mkdir build/html
+          gcovr --gcov-executable /usr/bin/gcov-13 --filter include/io1/money.hpp --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x build/coverage.xml --html-details build/html/index.html --html-details-syntax-highlighting -r . build
 
       - uses: actions/upload-artifact@v3
         with:
           name: detailed coverage report
-          path: html
+          path: build/html
+
+      - uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: build/coverage.xml
+          badge: true
+          fail_below_min: true
+          format: markdown
+          output: both
+          thresholds: '75 90'
+
+      - name: Add Coverage PR Comment
+        uses: mshick/add-pr-comment@v2
+        with:
+          message-id: coverage
+          refresh-message-position: true
+          message-path: code-coverage-results.md
