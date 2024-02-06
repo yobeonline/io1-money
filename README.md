@@ -34,13 +34,13 @@ template<std::integral T> explicit constexpr Money(T amount) noexcept; (3)
 template<char... STR> constexpr io1::Money operator ""_money() noexcept; (4)
 ```
 
-(1)	Create an uninitialized instance. Such instances are meant to be initialized by copy assignment. Before they are they can only be destructed. Any other use of a `void` constructed `io1::Money` has undefined behavior.
+(1)    Create an uninitialized instance. Such instances are meant to be initialized by copy assignment. Before they are they can only be destructed. Any other use of a `void` constructed `io1::Money` has undefined behavior.
 
-(2)	Create an instance which amount is the same as `o`.
+(2)    Create an instance which amount is the same as `o`.
 
-(3)	Create an instance which amount is `amount`. If `amount` overflows the capacity of `io1::Money` then it has undefined behavior.
+(3)    Create an instance which amount is `amount`. If `amount` overflows the capacity of `io1::Money` then it has undefined behavior.
 
-(4)	If provided with an integer number, it behaves like (3) except that overflows are diagnosed with a compilation failure.
+(4)    If provided with an integer number, it behaves like (3) except that overflows are diagnosed with a compilation failure.
 If provided with a float number, it deduces the lowest currency subdivision amount by ignoring the decimal separator (see the example below).
 
 ### Example
@@ -72,9 +72,9 @@ constexpr io1::Money & io1::Money::operator++() noexcept; (3)
 constexpr io1::Money & io1::Money::operator--() noexcept; (4)
 ```
 
-(1, 2)	Post increment/decrement operator. The `int` argument is ignored. Overflow has undefined behavior.
+(1, 2)    Post increment/decrement operator. The `int` argument is ignored. Overflow has undefined behavior.
 
-(3, 4)	Pre increment/decrement operator. Overflow has undefined behavior.
+(3, 4)    Pre increment/decrement operator. Overflow has undefined behavior.
 
 ### Assignment Operators
 
@@ -88,15 +88,15 @@ io1::Money & io1::Money::operator*=(long double f) noexcept; (6)
 io1::Money & io1::Money::operator/=(long double f) noexcept; (7)
 ```
 
-(1)	Copy assignment.
+(1)    Copy assignment.
 
-(2, 3)	Addition and subtraction assignment. Replace the amount with the result of addition / subtraction the between the previous amount and the amount of `m`. Overflow has undefined behavior.
+(2, 3)    Addition and subtraction assignment. Replace the amount with the result of addition / subtraction the between the previous amount and the amount of `m`. Overflow has undefined behavior.
 
-(4)	Multiplication by an integer assignment. Replace the amount with the result of the multiplication of the previous amount by `i`. Overflow has undefined behavior.
+(4)    Multiplication by an integer assignment. Replace the amount with the result of the multiplication of the previous amount by `i`. Overflow has undefined behavior.
 
-(5)	Division by an integer assignment. Replace the amount with the result of the division of the previous amount by `i`. If the result is not exact, the operator throws an instance of `io1::Money::InexactDivision` and provides the strong exception guarantee (see example below). Dividing by zero has undefined behavior.
+(5)    Division by an integer assignment. Replace the amount with the result of the division of the previous amount by `i`. If the result is not exact, the operator throws an instance of `io1::Money::InexactDivision` and provides the strong exception guarantee (see example below). Dividing by zero has undefined behavior.
 
-(6, 7)	Multiplication and division by a float. Replace the amount with the result of the multiplication / division of the previous amount by `f`. Overflow and division by zero have undefined behavior. Inexact results are rounded to nearest even integer. These operators assert that the current floating-point rounding mode is still (or has been restored to) the default value of `FE_TONEAREST`.
+(6, 7)    Multiplication and division by a float. Replace the amount with the result of the multiplication / division of the previous amount by `f`. Overflow and division by zero have undefined behavior. Inexact results are rounded to nearest even integer. These operators assert that the current floating-point rounding mode is still (or has been restored to) the default value of `FE_TONEAREST`.
 
 Multiplication and division assignments from `io1::Money` instances are not provided because they would violate dimensional analysis and would hence allow flawed uses of money arithmetic. For example, consider the result of 5 USD multiplied by 10 USD. According to dimensional analysis, the result should be homogeneous to USD _squared_, hence 50 USD² and not 50 USD. Likewise, 10 USD divided by 5 USD equals 2 (no dimension) and not 2 USD.
 
@@ -108,7 +108,7 @@ m /= 2; // ok, the result is 5_money
 try { m /= 2; }
 catch (io1::Money::InexactDivision const & e)
 {
-	std::cerr << "Dividing " << e.dividend << " by " << e.divisor << " is not exact.\n";
+    std::cerr << "Dividing " << e.dividend << " by " << e.divisor << " is not exact.\n";
     std::cout << "m still holds: " << m << '\n'; // 5_money
 }
 ```
@@ -119,7 +119,7 @@ catch (io1::Money::InexactDivision const & e)
 [[nodiscard]] constexpr io1::Money io1::Money::operator-() const noexcept; (1)
 ```
 
-(1)	Return an instance with an opposite amount. Overflow has undefined behavior.
+(1)    Return an instance with an opposite amount. Overflow has undefined behavior.
 
 The following operators are built from the assignment operators of the previous section and thus have the same restrictions.
 
@@ -140,9 +140,9 @@ auto const m1 = 2_money * 0.1 * 10.; (1)
 auto const m1 = 0.1 * 10. * 2_money; (2)
 ```
 
-(1)	Left to right evaluation results in `0_money` because of the intermediate rounding that occurs.
+(1)    Left to right evaluation results in `0_money` because of the intermediate rounding that occurs.
 
-(2)	Left to right evaluation gives the expected result of `2_money`.
+(2)    Left to right evaluation gives the expected result of `2_money`.
 
 ```cpp
 [[nodiscard]] io1::moneydiv_t io1::div(io1::Money m, io1::Money::value_type divisor) noexcept;
@@ -159,8 +159,6 @@ or
 ```cpp
 struct moneydiv_t { io1::Money rem; io1::Money quot; };
 ```
-
-
 
 ### Comparison Operators
 
@@ -183,30 +181,76 @@ std::istream & operator>>(std::istream & stream, io1::Money & m); (2)
 [[nodiscard]] /*unspecified*/ io1::get_money(io1::Money & m, bool intl = false); (4)
 ```
 
-(1)	Write the amount held by `m` in `stream`.
+(1)    Write the amount held by `m` in `stream`.
 
-(2)	Parse an instance of `io1::Money` from `stream` and copy assign it to `m`. The implementation is equivalent to the following code.
+(2)    Parse an instance of `io1::Money` from `stream` and copy assign it to `m`. The implementation is equivalent to the following code.
 
 ```cpp
 std::istream & operator>>(std::istream & stream, io1::Money & m)
 {
-	io1::Money::value_type amount;
-	if (stream >> amount) m = io1::Money{amount};
-	return stream;
+    io1::Money::value_type amount;
+    if (stream >> amount) m = io1::Money{amount};
+    return stream;
 }
 ```
 
-(3)	Return an object of unspecified type that can be inserted into a `std::ostream` instance to format `m` according to its current `moneypunct` facet. The `intl` argument, if true, uses the international currency string instead of the currency symbol.
+(3)    Return an object of unspecified type that can be inserted into a `std::ostream` instance to format `m` according to its current `moneypunct` facet. The `intl` argument, if true, uses the international currency string instead of the currency symbol.
 
-(4)	Return an object of unspecified type that can extract an instance of `io1::Money` from a `std::istream` instance according to its current `moneypunct` facet. The `intl` argument, if true, expects to find a required international currency string instead of an optional currency symbol.
+(4)    Return an object of unspecified type that can extract an instance of `io1::Money` from a `std::istream` instance according to its current `moneypunct` facet. The `intl` argument, if true, expects to find a required international currency string instead of an optional currency symbol.
+
+### Standard Format Support
+
+The syntax of format specifications is the same as the standard syntax for `integers`. Alternatively, localized formatting through the current `moneypunct` facet can be achieved with the following syntax:
+
+>  _fill-and-align_(optional) _width_(optional) _#_(optional) _type_(m or M)
+
+#### Fill, Align and Width
+
+Same as standard specifications for `std::string`.
+
+#### Show Currency \#
+
+Display currency in a way equivalent to activating the `showbase` I/O manipulator on streams.
+
+#### Type
+
+The type option must be one of the following:
+
+- **m**: format with the `std::moneypunct<CharT, false>` facet.
+
+- **M**: format with the `std::moneypunct<CharT, true>` facet.
+
+#### Examples
+
+```cpp
+std::cout << std::format("{}\n", 12.35_money);
+std::cout << std::format("{:m}\n", 12.35_money);
+std::cout << std::format("{:M)\n", 12.35_money);
+std::cout << std::format(std::locale("en_US.UTF-8"), "{:m}\n", 12.35_money);
+std::cout << std::format(std::locale("en_US.UTF-8"), "{:M}\n", 12.35_money);
+std::cout << std::format(std::locale("en_US.UTF-8"), "{:#m}\n", 12.35_money);
+std::cout << std::format(std::locale("en_US.UTF-8"), "{:#M}\n", 12.35_money);
+```
+
+Assuming the global locale is the default C++ locale, the above code prints out:
+
+```cpp
+1235
+1235
+1235
+12.35
+ 12.35
+$12.35
+USD  12.35
+```
 
 ## Exceptions
 
 ```cpp
 struct [[nodiscard]] io1::Money::InexactDivision
 {
-	io1::Money::value_type dividend;
-	io1::Money::value_type divisor;
+    io1::Money::value_type dividend;
+    io1::Money::value_type divisor;
 };
 ```
 
@@ -216,11 +260,12 @@ Exception thrown when trying to divide `dividend` by `divisor` and `dividend % d
 
 ```cpp
 // file test/tutorial.cpp
-#include "money.hpp"
+#include "io1/money.hpp"
 
-#include <boost/test/unit_test.hpp>
+#include <doctest/doctest.h>
 #include <numeric>
 #include <sstream>
+#include <vector>
 
 class american_moneypunct_facet : public std::moneypunct<char, false>
 {
@@ -250,20 +295,20 @@ private:
   for (std::size_t i = 0; i < m; ++i) ++plan[i];
 
   return plan;
-};
+}
 
-BOOST_AUTO_TEST_CASE(Tutorial)
+TEST_CASE("Tutorial")
 {
   auto const unit_price = 12.00_money;
   auto const vat = 1.2;
   auto const discount_rate = 10. / 100.;
 
   // Parse How many items are bought:
-  std::size_t nb = 0;
+  unsigned int nb = 0;
   std::stringstream("2") >> nb;
 
   // Parse how much tip is given:
-  io1::Money tip;
+  auto tip = 0_money;
   {
     std::stringstream cin("$1.00");
     cin.imbue(std::locale(cin.getloc(), std::make_unique<american_moneypunct_facet>().release()));
@@ -283,10 +328,9 @@ BOOST_AUTO_TEST_CASE(Tutorial)
   cout << installments_nb << " payments:";
   for (auto const & amount : payment_plan) cout << ' ' << put_money(amount);
 
-  BOOST_REQUIRE_EQUAL(std::accumulate(payment_plan.begin(), payment_plan.end(), 0_money), final_price);
-  BOOST_REQUIRE_EQUAL(cout.str(), "Total: $26.92\n5 payments: $5.39 $5.39 $5.38 $5.38 $5.38");
+  CHECK_EQ(std::accumulate(payment_plan.begin(), payment_plan.end(), 0_money), final_price);
+  CHECK_EQ(cout.str(), "Total: $26.92\n5 payments: $5.39 $5.39 $5.38 $5.38 $5.38");
 
   return;
 }
 ```
-
