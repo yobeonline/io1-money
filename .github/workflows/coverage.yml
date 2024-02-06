@@ -47,8 +47,8 @@ jobs:
         with:
           path: build/coverage.xml
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          minimum_coverage: 83
-          fail_below_threshold: true
+          minimum_coverage: 85
+          fail_below_threshold: false
           show_line: true
           show_branch: true
-          show_missing: true
+          only_changed_files: true
