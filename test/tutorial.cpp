@@ -16,8 +16,8 @@ private:
   std::string do_positive_sign() const override { return ""; };
   std::string do_negative_sign() const override { return "-"; };
   int do_frac_digits() const override { return 2; };
-  pattern do_pos_format() const override { return {{symbol, sign, value}}; };
-  pattern do_neg_format() const override { return {{symbol, sign, value}}; };
+  pattern do_pos_format() const override { return {symbol, sign, value}; };
+  pattern do_neg_format() const override { return {symbol, sign, value}; };
 };
 
 [[nodiscard]] auto compute_installment_plan(io1::Money price, std::size_t count) noexcept
@@ -60,12 +60,16 @@ TEST_CASE("Tutorial")
 
   auto const final_price = tip + nb * (1. - discount_rate) * vat * unit_price;
   std::stringstream cout;
-  cout.imbue(std::locale(cout.getloc(), std::make_unique<american_moneypunct_facet>().release()));
-  cout << "Total: " << std::showbase << put_money(final_price) << '\n';
+
+  cout << "Total: "
+       << std::format(std::locale(cout.getloc(), std::make_unique<american_moneypunct_facet>().release()), "{:#m}\n",
+                      final_price);
 
   auto const payment_plan = compute_installment_plan(final_price, installments_nb);
   cout << installments_nb << " payments:";
-  for (auto const & amount : payment_plan) cout << ' ' << put_money(amount);
+
+  cout.imbue(std::locale(cout.getloc(), std::make_unique<american_moneypunct_facet>().release()));
+  for (auto const & amount : payment_plan) cout << ' ' << std::showbase << put_money(amount);
 
   CHECK_EQ(std::accumulate(payment_plan.begin(), payment_plan.end(), 0_money), final_price);
   CHECK_EQ(cout.str(), "Total: $26.92\n5 payments: $5.39 $5.39 $5.38 $5.38 $5.38");

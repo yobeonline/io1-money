@@ -6,9 +6,11 @@
 #include <compare>
 #include <concepts>
 #include <cstdint>
+#include <format>
 #include <iomanip>
 #include <iosfwd>
 #include <limits>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -349,3 +351,57 @@ constexpr io1::Money operator""_money(void) noexcept
 {
   return io1::Money::StringLitteralDecoder::apply<STR...>();
 }
+
+template <class CharT>
+struct std::formatter<io1::Money, CharT>
+{
+  template <class FormatParseContext>
+  constexpr auto parse(FormatParseContext & ctx)
+  {
+    auto close_pos = ctx.begin();
+    while (close_pos != ctx.end() && *close_pos != '}') ++close_pos;
+
+    std::basic_string_view<CharT> spec(ctx.begin(), close_pos);
+
+    if (spec.ends_with("m")) { locale_ = true; }
+    else if (spec.ends_with("M"))
+    {
+      locale_ = true;
+      intl_ = true;
+    }
+
+    if (!locale_) return int_.parse(ctx);
+
+    auto size = spec.size() - 1;
+
+    if (spec.find('#') != spec.npos)
+    {
+      --size;
+      showbase_ = true;
+    }
+
+    FormatParseContext subctx(spec.substr(0, size));
+    string_.parse(subctx);
+
+    return close_pos;
+  }
+
+  template <class FormatContext>
+  auto format(io1::Money const & m, FormatContext & ctx) const
+  {
+    if (!locale_) return int_.format(m.data(), ctx);
+    else
+    {
+      std::basic_stringstream<CharT> stream;
+      stream.imbue(ctx.locale());
+      stream << (showbase_ ? std::showbase : std::noshowbase) << std::put_money(std::to_string(m.data()), intl_);
+      return string_.format(stream.str(), ctx);
+    }
+  }
+
+  bool locale_ : 1 {false};
+  bool showbase_ : 1 {false};
+  bool intl_ : 1 {false};
+  std::formatter<io1::Money::value_type, CharT> int_;
+  std::formatter<std::basic_string<CharT>, CharT> string_;
+};

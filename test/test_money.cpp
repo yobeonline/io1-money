@@ -493,8 +493,22 @@ namespace
     std::string do_positive_sign() const override { return "++"; };
     std::string do_negative_sign() const override { return "--"; };
     int do_frac_digits() const override { return 1; };
-    pattern do_pos_format() const override { return {{sign, space, value, symbol}}; };
-    pattern do_neg_format() const override { return {{sign, space, value, symbol}}; };
+    pattern do_pos_format() const override { return {sign, space, value, symbol}; };
+    pattern do_neg_format() const override { return {sign, space, value, symbol}; };
+  };
+
+  class intl_moneypunct_facet : public std::moneypunct<char, true>
+  {
+  private:
+    char do_decimal_point() const override { return '_'; };
+    char do_thousands_sep() const override { return '-'; };
+    std::string do_grouping() const override { return "\002"; };
+    std::string do_curr_symbol() const override { return "CUR "; };
+    std::string do_positive_sign() const override { return "++"; };
+    std::string do_negative_sign() const override { return "--"; };
+    int do_frac_digits() const override { return 1; };
+    pattern do_pos_format() const override { return {sign, space, value, symbol}; };
+    pattern do_neg_format() const override { return {sign, space, value, symbol}; };
   };
 } // namespace
 
@@ -541,6 +555,150 @@ TEST_CASE("Format leading zero")
     CHECK("+ 0_0+ + 0_0+ + 0_1+ - 0_1- - 0_1- + 0_1+" == stream.str());
   }
 #endif
+
+  return;
+}
+
+TEST_CASE("Formatter")
+{
+  // without the m or M type specifier, money behaves as an int
+  CHECK("1235" == std::format("{}", 12.35_money));
+
+  CHECK("1235" == std::format("{:<}", 12.35_money));
+  CHECK("1235" == std::format("{:>}", 12.35_money));
+  CHECK("1235" == std::format("{:^}", 12.35_money));
+  CHECK("1235" == std::format("{:*<}", 12.35_money));
+  CHECK("1235" == std::format("{:*>}", 12.35_money));
+  CHECK("1235" == std::format("{:*^}", 12.35_money));
+
+  CHECK("  1235" == std::format("{:6}", 12.35_money));
+  CHECK("  1235" == std::format("{:{}}", 12.35_money, 6));
+  CHECK("1235  " == std::format("{:<6}", 12.35_money));
+  CHECK("  1235" == std::format("{:>6}", 12.35_money));
+  CHECK(" 1235 " == std::format("{:^6}", 12.35_money));
+  CHECK(" 1235  " == std::format("{:^7}", 12.35_money));
+
+  CHECK("1235**" == std::format("{:*<6}", 12.35_money));
+  CHECK("**1235" == std::format("{:*>6}", 12.35_money));
+  CHECK("*1235*" == std::format("{:*^6}", 12.35_money));
+  CHECK("*1235**" == std::format("{:*^7}", 12.35_money));
+
+  CHECK("01235" == std::format("{:05}", 12.35_money));
+  CHECK("1235" == std::format("{:04}", 12.35_money));
+
+  CHECK("+1235" == std::format("{:+5}", 12.35_money));
+  CHECK(" 1235" == std::format("{: 4}", 12.35_money));
+
+  // with m or M
+  std::stringstream str;
+  CHECK("+ 1-23-45_6+" ==
+        std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()), "{:m}", 123456_money));
+  CHECK("+ 1-23-45_6$$+" ==
+        std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()), "{:#m}", 123456_money));
+  CHECK("+ 1-23-45_6+" == std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()),
+                                      "{:M}", 123456_money));
+  CHECK("+ 1-23-45_6CUR +" ==
+        std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()), "{:#M}",
+                    123456_money));
+
+  CHECK("+ 1-23-45_6+" ==
+        std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()), "{:<m}", 123456_money));
+  CHECK("+ 1-23-45_6$$+" ==
+        std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()), "{:<#m}", 123456_money));
+  CHECK("+ 1-23-45_6+" == std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()),
+                                      "{:<M}", 123456_money));
+  CHECK("+ 1-23-45_6CUR +" ==
+        std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()), "{:<#M}",
+                    123456_money));
+
+  CHECK("+ 1-23-45_6+" ==
+        std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()), "{:>m}", 123456_money));
+  CHECK("+ 1-23-45_6$$+" ==
+        std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()), "{:>#m}", 123456_money));
+  CHECK("+ 1-23-45_6+" == std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()),
+                                      "{:>M}", 123456_money));
+  CHECK("+ 1-23-45_6CUR +" ==
+        std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()), "{:>#M}",
+                    123456_money));
+
+  CHECK("+ 1-23-45_6+" ==
+        std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()), "{:^m}", 123456_money));
+  CHECK("+ 1-23-45_6$$+" ==
+        std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()), "{:^#m}", 123456_money));
+  CHECK("+ 1-23-45_6+" == std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()),
+                                      "{:^M}", 123456_money));
+  CHECK("+ 1-23-45_6CUR +" ==
+        std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()), "{:^#M}",
+                    123456_money));
+
+  CHECK("+ 1-23-45_6+   " == std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()),
+                                         "{:<15m}", 123456_money));
+  CHECK("+ 1-23-45_6$$+ " == std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()),
+                                         "{:<15#m}", 123456_money));
+  CHECK("+ 1-23-45_6+        " ==
+        std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()), "{:<20M}",
+                    123456_money));
+  CHECK("+ 1-23-45_6CUR +    " ==
+        std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()), "{:<20#M}",
+                    123456_money));
+
+  CHECK("+ 1-23-45_6$$+  foo" == std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()),
+                                             "{:<15#m} foo", 123456_money));
+
+  CHECK("   + 1-23-45_6+" == std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()),
+                                         "{:>15m}", 123456_money));
+  CHECK(" + 1-23-45_6$$+" == std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()),
+                                         "{:>15#m}", 123456_money));
+  CHECK("        + 1-23-45_6+" ==
+        std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()), "{:>20M}",
+                    123456_money));
+  CHECK("    + 1-23-45_6CUR +" ==
+        std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()), "{:>20#M}",
+                    123456_money));
+
+  CHECK(" + 1-23-45_6+  " == std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()),
+                                         "{:^15m}", 123456_money));
+  CHECK("+ 1-23-45_6$$+ " == std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()),
+                                         "{:^15#m}", 123456_money));
+  CHECK("    + 1-23-45_6+    " ==
+        std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()), "{:^20M}",
+                    123456_money));
+  CHECK("  + 1-23-45_6CUR +  " ==
+        std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()), "{:^20#M}",
+                    123456_money));
+
+  CHECK("+ 1-23-45_6+***" == std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()),
+                                         "{:*<15m}", 123456_money));
+  CHECK("+ 1-23-45_6$$+*" == std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()),
+                                         "{:*<15#m}", 123456_money));
+  CHECK("+ 1-23-45_6+********" ==
+        std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()), "{:*<20M}",
+                    123456_money));
+  CHECK("+ 1-23-45_6CUR +****" ==
+        std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()), "{:*<20#M}",
+                    123456_money));
+
+  CHECK("***+ 1-23-45_6+" == std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()),
+                                         "{:*>15m}", 123456_money));
+  CHECK("*+ 1-23-45_6$$+" == std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()),
+                                         "{:*>15#m}", 123456_money));
+  CHECK("********+ 1-23-45_6+" ==
+        std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()), "{:*>20M}",
+                    123456_money));
+  CHECK("****+ 1-23-45_6CUR +" ==
+        std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()), "{:*>20#M}",
+                    123456_money));
+
+  CHECK("*+ 1-23-45_6+**" == std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()),
+                                         "{:*^15m}", 123456_money));
+  CHECK("+ 1-23-45_6$$+*" == std::format(std::locale(str.getloc(), std::make_unique<moneypunct_facet>().release()),
+                                         "{:*^15#m}", 123456_money));
+  CHECK("****+ 1-23-45_6+****" ==
+        std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()), "{:*^20M}",
+                    123456_money));
+  CHECK("**+ 1-23-45_6CUR +**" ==
+        std::format(std::locale(str.getloc(), std::make_unique<intl_moneypunct_facet>().release()), "{:*^20#M}",
+                    123456_money));
 
   return;
 }
