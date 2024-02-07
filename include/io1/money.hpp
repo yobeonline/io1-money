@@ -23,9 +23,13 @@ namespace io1
     using value_type = std::int64_t;
     // -9'223'372'036'854'775'807-1 below, is a portable way to have the value -9'223'372'036'854'775'808 with no
     // overflow because of operator- applied after the positive int (too big) is created.
-    static_assert(std::numeric_limits<value_type>::max() >= 9'223'372'036'854'775'807 && // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
-                      std::numeric_limits<value_type>::lowest() <= -9'223'372'036'854'775'807 - 1, // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
-                  "Type too short to hold the advertised value range.");
+    static_assert(
+        std::numeric_limits<value_type>::max() >=
+                9'223'372'036'854'775'807 && // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+            std::numeric_limits<value_type>::lowest() <=
+                -9'223'372'036'854'775'807 -
+                    1, // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+        "Type too short to hold the advertised value range.");
 
     money() noexcept = default;
 
@@ -101,7 +105,8 @@ namespace io1
 
     struct [[nodiscard]] InexactDivision : public std::runtime_error
     {
-      explicit InexactDivision(value_type dividend, value_type divisor) noexcept // NOLINT(bugprone-easily-swappable-parameters)
+      explicit InexactDivision(value_type dividend,
+                               value_type divisor) noexcept // NOLINT(bugprone-easily-swappable-parameters)
           : std::runtime_error("Cannot perform an inexact division!"), dividend(dividend), divisor(divisor)
       {
       }
@@ -231,15 +236,11 @@ namespace io1
         constexpr auto new_mantissa = []()
         {
           if constexpr (not_a_digit<DIGIT>()) { return CURRENT_MANTISSA; }
-          else
-          {
-            return parse_digit<CURRENT_MANTISSA, DIGIT>();
-          }
+          else { return parse_digit<CURRENT_MANTISSA, DIGIT>(); }
         }();
 
         if constexpr (0 < sizeof...(STR)) { return parse_mantissa<new_mantissa, STR...>(); }
-        else
-        { return new_mantissa; }
+        else { return new_mantissa; }
       }
     };
   } // namespace detail
@@ -250,7 +251,8 @@ namespace io1
   }
   inline std::istream & operator>>(std::istream & stream, io1::money & val)
   {
-    io1::money::value_type amount; // NOLINT(cppcoreguidelines-init-variables) value is used once we have confirmation that it has been initialized
+    io1::money::value_type amount; // NOLINT(cppcoreguidelines-init-variables) value is used once we have confirmation
+                                   // that it has been initialized
     stream >> amount;
     if (stream) { val = io1::money(amount); } // strong guarantee
     return stream;
