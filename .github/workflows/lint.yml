@@ -1,0 +1,20 @@
+name: linters
+on: [push]
+
+jobs:
+  clang-tidy:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint
+        run: |
+          clang-tidy-16 lint/lint.cpp --export-fixes=clang-fixes.yaml --header-filter=io1/* -- -Iinclude -std=c++20
+
+      - name: Process clang-tidy warnings
+        uses: asarium/clang-tidy-action@v1
+        with:
+          fixesFile: clang-fixes.yaml
