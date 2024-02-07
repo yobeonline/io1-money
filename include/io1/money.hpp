@@ -23,15 +23,22 @@ namespace io1
     using value_type = std::int64_t;
     // -9'223'372'036'854'775'807-1 below, is a portable way to have the value -9'223'372'036'854'775'808 with no
     // overflow because of operator- applied after the positive int (too big) is created.
-    static_assert(std::numeric_limits<value_type>::max() >= 9'223'372'036'854'775'807 &&
-                      std::numeric_limits<value_type>::lowest() <= -9'223'372'036'854'775'807 - 1,
-                  "Type too short to hold the advertised value range.");
+    static_assert(
+        std::numeric_limits<value_type>::max() >=
+                9'223'372'036'854'775'807 && // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+            std::numeric_limits<value_type>::lowest() <=
+                -9'223'372'036'854'775'807 - // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+                    1,
+        "Type too short to hold the advertised value range.");
 
-  public:
-    money(void) noexcept = default;
+    money() noexcept = default;
 
     constexpr money(money const &) noexcept = default;
+    constexpr money(money &&) noexcept = default;
     constexpr money & operator=(money const &) noexcept = default;
+    constexpr money & operator=(money &&) noexcept = default;
+
+    constexpr ~money() noexcept = default;
 
     template <std::integral T>
     explicit constexpr money(T amount) noexcept : amount_(static_cast<value_type>(amount))
@@ -41,46 +48,46 @@ namespace io1
     template <std::floating_point T>
     explicit constexpr money(T amount) noexcept = delete;
 
-    [[nodiscard]] constexpr value_type const & data(void) const noexcept { return amount_; }
+    [[nodiscard]] constexpr value_type const & data() const noexcept { return amount_; }
 
     [[nodiscard]] constexpr money operator++(int) noexcept { return money{amount_++}; }
     [[nodiscard]] constexpr money operator--(int) noexcept { return money{amount_--}; }
 
-    constexpr money & operator++(void) noexcept
+    constexpr money & operator++() noexcept
     {
       ++amount_;
       return *this;
     }
-    constexpr money & operator--(void) noexcept
+    constexpr money & operator--() noexcept
     {
       --amount_;
       return *this;
     }
 
-    constexpr money & operator+=(money m) noexcept
+    constexpr money & operator+=(money val) noexcept
     {
-      amount_ += m.amount_;
+      amount_ += val.amount_;
       return *this;
     }
-    constexpr money & operator-=(money m) noexcept
+    constexpr money & operator-=(money val) noexcept
     {
-      amount_ -= m.amount_;
+      amount_ -= val.amount_;
       return *this;
     }
 
     template <std::integral T>
-    constexpr money & operator*=(T i) noexcept
+    constexpr money & operator*=(T ival) noexcept
     {
-      amount_ *= static_cast<value_type>(i);
+      amount_ *= static_cast<value_type>(ival);
       return *this;
     }
 
     template <std::floating_point T>
-    money & operator*=(T v) noexcept
+    money & operator*=(T fval) noexcept
     {
       assert((std::fegetround() == FE_TONEAREST) &&
              "Make sure the default rounding mode is active before entering this function.");
-      auto const result = std::llrint(amount_ * static_cast<long double>(v));
+      auto const result = std::llrint(amount_ * static_cast<long double>(fval));
       static_assert(sizeof(decltype(result)) == sizeof(decltype(amount_)),
                     "Consider changing the call to std::llrint.");
       amount_ = result;
@@ -88,19 +95,19 @@ namespace io1
     }
 
     template <std::integral T>
-    constexpr money & operator/=(T i);
+    constexpr money & operator/=(T ival);
 
     template <std::floating_point T>
-    money & operator/=(T v) noexcept;
+    money & operator/=(T fval) noexcept;
 
-    [[nodiscard]] constexpr money operator-(void) const noexcept { return money{-amount_}; }
+    [[nodiscard]] constexpr money operator-() const noexcept { return money{-amount_}; }
     [[nodiscard]] friend constexpr std::strong_ordering operator<=>(money lhs, money rhs) noexcept = default;
 
-  public:
     struct [[nodiscard]] InexactDivision : public std::runtime_error
     {
-      explicit InexactDivision(value_type dend, value_type dsor) noexcept
-          : std::runtime_error("Cannot perform an inexact division!"), dividend(dend), divisor(dsor)
+      explicit InexactDivision(value_type dividend,         // NOLINT(bugprone-easily-swappable-parameters)
+                               value_type divisor) noexcept // NOLINT(bugprone-easily-swappable-parameters)
+          : std::runtime_error("Cannot perform an inexact division!"), dividend(dividend), divisor(divisor)
       {
       }
 
@@ -112,10 +119,9 @@ namespace io1
     struct PutMoney;
     struct GetMoney;
 
-    friend io1::money::PutMoney put_money(io1::money, bool) noexcept;
-    friend io1::money::GetMoney get_money(io1::money &, bool);
+    friend io1::money::PutMoney put_money(io1::money val, bool intl) noexcept;
+    friend io1::money::GetMoney get_money(io1::money & val, bool intl);
 
-  private:
     value_type amount_;
   };
 
@@ -123,11 +129,11 @@ namespace io1
                 "You have changed io1::Money in a way that removed its POD nature!");
 
   template <std::integral T>
-  constexpr money & money::operator/=(T i)
+  constexpr money & money::operator/=(T ival)
   {
-    assert(0 != i && "Dividing by zero is undefined behavior.");
-    auto const divisor = static_cast<value_type>(i);
-    if (amount_ % divisor) throw io1::money::InexactDivision{amount_, divisor};
+    assert(0 != ival && "Dividing by zero is undefined behavior.");
+    auto const divisor = static_cast<value_type>(ival);
+    if (amount_ % divisor) { throw money::InexactDivision{amount_, divisor}; }
 
     // strong guarantee
     amount_ /= divisor;
@@ -136,12 +142,12 @@ namespace io1
   }
 
   template <std::floating_point T>
-  inline money & money::operator/=(T v) noexcept
+  inline money & money::operator/=(T fval) noexcept
   {
-    assert(0. != v && "Dividing by zero is undefined behavior.");
+    assert(0. != fval && "Dividing by zero is undefined behavior.");
     assert((std::fegetround() == FE_TONEAREST) &&
            "Make sure the default rounding mode is active before entering this function.");
-    auto const result = std::llrint(amount_ / static_cast<long double>(v));
+    auto const result = std::llrint(amount_ / static_cast<long double>(fval));
     static_assert(sizeof(decltype(result)) == sizeof(decltype(amount_)), "Consider changing the call to std::llrint.");
     amount_ = result;
 
@@ -197,80 +203,82 @@ namespace io1
     {
     public:
       template <char... STR>
-      [[nodiscard]] constexpr static money apply(void) noexcept
+      [[nodiscard]] constexpr static money apply() noexcept
       {
         return money{parse_mantissa<0, STR...>()};
       }
 
     private:
       template <money::value_type CURRENT_MANTISSA, char DIGIT>
-      [[nodiscard]] constexpr static money::value_type parse_digit(void) noexcept
+      [[nodiscard]] constexpr static money::value_type parse_digit() noexcept
       {
         static_assert('0' <= DIGIT && '9' >= DIGIT, "Unexpected digit!");
 
-        constexpr auto d = static_cast<money::value_type>(DIGIT - '0');
+        constexpr auto digit = static_cast<money::value_type>(DIGIT - '0');
         constexpr auto ten = static_cast<money::value_type>(10);
 
         static_assert(CURRENT_MANTISSA >= 0, "Parsing a raw user-defined litteral.");
-        static_assert((std::numeric_limits<money::value_type>::max() - d) / ten >= CURRENT_MANTISSA,
+        static_assert((std::numeric_limits<money::value_type>::max() - digit) / ten >= CURRENT_MANTISSA,
                       "Number not representable by io1::Money");
 
-        return ten * CURRENT_MANTISSA + d;
+        return ten * CURRENT_MANTISSA + digit;
       }
 
       template <char DIGIT>
-      [[nodiscard]] constexpr static bool not_a_digit(void) noexcept
+      [[nodiscard]] constexpr static bool not_a_digit() noexcept
       {
         return (DIGIT == '.' || DIGIT == '\'');
       }
 
       template <money::value_type CURRENT_MANTISSA, char DIGIT, char... STR>
-      constexpr static money::value_type parse_mantissa(void) noexcept
+      constexpr static money::value_type parse_mantissa() noexcept
       {
         constexpr auto new_mantissa = []()
         {
-          if constexpr (not_a_digit<DIGIT>()) return CURRENT_MANTISSA;
-          else
-            return parse_digit<CURRENT_MANTISSA, DIGIT>();
+          if constexpr (not_a_digit<DIGIT>()) { return CURRENT_MANTISSA; }
+          else { return parse_digit<CURRENT_MANTISSA, DIGIT>(); }
         }();
 
-        if constexpr (0 < sizeof...(STR)) return parse_mantissa<new_mantissa, STR...>();
-        else
-          return new_mantissa;
+        if constexpr (0 < sizeof...(STR)) { return parse_mantissa<new_mantissa, STR...>(); }
+        else { return new_mantissa; }
       }
     };
   } // namespace detail
 
-  inline std::ostream & operator<<(std::ostream & stream, io1::money m) noexcept
+  inline std::ostream & operator<<(std::ostream & stream, io1::money val) noexcept
   {
-    return stream << m.data();
+    return stream << val.data();
   }
-  inline std::istream & operator>>(std::istream & stream, io1::money & m)
+  inline std::istream & operator>>(std::istream & stream, io1::money & val)
   {
-    io1::money::value_type amount;
+    io1::money::value_type amount; // NOLINT(cppcoreguidelines-init-variables) value is used once we have confirmation
+                                   // that it has been initialized
     stream >> amount;
-    if (stream) m = io1::money(amount); // strong guarantee
+    if (stream) { val = io1::money(amount); } // strong guarantee
     return stream;
   }
 
   struct money::GetMoney
   {
-    explicit GetMoney(money & m, bool intl) noexcept : intl_(intl), amount_(m.amount_){};
+    explicit GetMoney(money & val, bool intl) noexcept : intl_(intl), amount_(val.amount_){};
     GetMoney(GetMoney const &) = delete;
+    GetMoney(GetMoney &&) = delete;
     GetMoney & operator=(GetMoney const &) = delete;
+    GetMoney & operator=(GetMoney &&) = delete;
+    ~GetMoney() noexcept = default;
 
-    friend inline std::istream & operator>>(std::istream & stream, GetMoney && o)
+    friend inline std::istream & operator>>(std::istream & stream, GetMoney && obj)
     {
       std::string amount;
-      stream >> std::get_money(amount, o.intl_);
-      if (!stream) return stream;
+      stream >> std::get_money(amount, obj.intl_);
+      if (!stream) { return stream; }
 
       try
       {
         auto const parsed_amount = std::stoll(amount);
-        static_assert(sizeof(decltype(parsed_amount)) == sizeof(decltype(o.amount_)),
+        static_assert(sizeof(decltype(parsed_amount)) == sizeof(decltype(obj.amount_)),
                       "Consider changing the call to std::stoll.");
-        o.amount_ = parsed_amount;
+        obj.amount_ = parsed_amount;
       }
       catch (std::out_of_range const &)
       {
@@ -286,27 +294,30 @@ namespace io1
 
   struct money::PutMoney
   {
-    explicit PutMoney(money m, bool intl) noexcept : intl_(intl), amount_(std::to_string(m.data())) {}
+    explicit PutMoney(money val, bool intl) noexcept : intl_(intl), amount_(std::to_string(val.data())) {}
     PutMoney(PutMoney const &) = delete;
+    PutMoney(PutMoney &&) = delete;
     PutMoney & operator=(PutMoney const &) = delete;
+    PutMoney & operator=(PutMoney &&) = delete;
+    ~PutMoney() noexcept = default;
 
-    friend inline std::ostream & operator<<(std::ostream & stream, PutMoney const & o)
+    friend inline std::ostream & operator<<(std::ostream & stream, PutMoney const & obj)
     {
-      return stream << std::put_money(o.amount_, o.intl_);
+      return stream << std::put_money(obj.amount_, obj.intl_);
     }
 
     bool intl_;
     std::string amount_;
   };
 
-  [[nodiscard]] inline io1::money::PutMoney put_money(io1::money m, bool intl = false) noexcept
+  [[nodiscard]] inline io1::money::PutMoney put_money(io1::money val, bool intl = false) noexcept
   {
-    return io1::money::PutMoney(m, intl);
+    return io1::money::PutMoney(val, intl);
   }
 
-  [[nodiscard]] inline io1::money::GetMoney get_money(io1::money & m, bool intl = false)
+  [[nodiscard]] inline io1::money::GetMoney get_money(io1::money & val, bool intl = false)
   {
-    return io1::money::GetMoney(m, intl);
+    return io1::money::GetMoney(val, intl);
   }
 
   namespace detail
@@ -326,11 +337,11 @@ namespace io1
 
   using moneydiv_t = std::conditional_t<detail::is_quot_rem_v, detail::moneydiv_quotrem_t, detail::moneydiv_remquot_t>;
 
-  [[nodiscard]] inline moneydiv_t div(money m, money::value_type divisor) noexcept
+  [[nodiscard]] inline moneydiv_t div(money val, money::value_type divisor) noexcept
   {
     assert(0 != divisor && "Division by zero is undefined behavior.");
 
-    auto const result = std::div(m.data(), divisor);
+    auto const result = std::div(val.data(), divisor);
 
     return {.quot = money(result.quot), .rem = money(result.rem)};
   }
@@ -338,7 +349,7 @@ namespace io1
   inline namespace literals
   {
     template <char... STR>
-    constexpr io1::money operator""_money(void) noexcept
+    constexpr io1::money operator""_money() noexcept
     {
       return io1::detail::StringLitteralDecoder::apply<STR...>();
     }
@@ -352,9 +363,9 @@ struct std::formatter<io1::money, CharT>
   constexpr auto parse(FormatParseContext & ctx)
   {
     auto close_pos = ctx.begin();
-    while (close_pos != ctx.end() && *close_pos != '}') ++close_pos;
+    while (close_pos != ctx.end() && *close_pos != '}') { ++close_pos; }
 
-    std::basic_string_view<CharT> spec(ctx.begin(), close_pos);
+    std::basic_string_view<CharT> const spec(ctx.begin(), close_pos);
 
     if (spec.ends_with("m")) { locale_ = true; }
     else if (spec.ends_with("M"))
@@ -363,7 +374,7 @@ struct std::formatter<io1::money, CharT>
       intl_ = true;
     }
 
-    if (!locale_) return int_.parse(ctx);
+    if (!locale_) { return int_.parse(ctx); }
 
     auto size = spec.size() - 1;
 
@@ -380,14 +391,14 @@ struct std::formatter<io1::money, CharT>
   }
 
   template <class FormatContext>
-  auto format(io1::money const & m, FormatContext & ctx) const
+  auto format(io1::money const & val, FormatContext & ctx) const
   {
-    if (!locale_) return int_.format(m.data(), ctx);
+    if (!locale_) { return int_.format(val.data(), ctx); }
     else
     {
       std::basic_stringstream<CharT> stream;
       stream.imbue(ctx.locale());
-      stream << (showbase_ ? std::showbase : std::noshowbase) << std::put_money(std::to_string(m.data()), intl_);
+      stream << (showbase_ ? std::showbase : std::noshowbase) << std::put_money(std::to_string(val.data()), intl_);
       return string_.format(stream.str(), ctx);
     }
   }
