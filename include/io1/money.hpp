@@ -27,8 +27,8 @@ namespace io1
         std::numeric_limits<value_type>::max() >=
                 9'223'372'036'854'775'807 && // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
             std::numeric_limits<value_type>::lowest() <=
-                -9'223'372'036'854'775'807 -
-                    1, // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+                -9'223'372'036'854'775'807 - // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+                    1,
         "Type too short to hold the advertised value range.");
 
     money() noexcept = default;
@@ -105,7 +105,7 @@ namespace io1
 
     struct [[nodiscard]] InexactDivision : public std::runtime_error
     {
-      explicit InexactDivision(value_type dividend,
+      explicit InexactDivision(value_type dividend, // NOLINT(bugprone-easily-swappable-parameters)
                                value_type divisor) noexcept // NOLINT(bugprone-easily-swappable-parameters)
           : std::runtime_error("Cannot perform an inexact division!"), dividend(dividend), divisor(divisor)
       {
