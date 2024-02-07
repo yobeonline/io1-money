@@ -105,7 +105,7 @@ namespace io1
 
     struct [[nodiscard]] InexactDivision : public std::runtime_error
     {
-      explicit InexactDivision(value_type dividend, // NOLINT(bugprone-easily-swappable-parameters)
+      explicit InexactDivision(value_type dividend,         // NOLINT(bugprone-easily-swappable-parameters)
                                value_type divisor) noexcept // NOLINT(bugprone-easily-swappable-parameters)
           : std::runtime_error("Cannot perform an inexact division!"), dividend(dividend), divisor(divisor)
       {
