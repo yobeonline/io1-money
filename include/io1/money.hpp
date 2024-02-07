@@ -23,8 +23,8 @@ namespace io1
     using value_type = std::int64_t;
     // -9'223'372'036'854'775'807-1 below, is a portable way to have the value -9'223'372'036'854'775'808 with no
     // overflow because of operator- applied after the positive int (too big) is created.
-    static_assert(std::numeric_limits<value_type>::max() >= 9'223'372'036'854'775'807 && // NOLINT(cppcoreguidelines-avoid-magic-numbers)
-                      std::numeric_limits<value_type>::lowest() <= -9'223'372'036'854'775'807 - 1, // NOLINT(cppcoreguidelines-avoid-magic-numbers)
+    static_assert(std::numeric_limits<value_type>::max() >= 9'223'372'036'854'775'807 && // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+                      std::numeric_limits<value_type>::lowest() <= -9'223'372'036'854'775'807 - 1, // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
                   "Type too short to hold the advertised value range.");
 
     money() noexcept = default;
@@ -46,8 +46,8 @@ namespace io1
 
     [[nodiscard]] constexpr value_type const & data() const noexcept { return amount_; }
 
-    [[nodiscard]] constexpr money const operator++(int) noexcept { return money{amount_++}; }
-    [[nodiscard]] constexpr money const operator--(int) noexcept { return money{amount_--}; }
+    [[nodiscard]] constexpr money operator++(int) noexcept { return money{amount_++}; }
+    [[nodiscard]] constexpr money operator--(int) noexcept { return money{amount_--}; }
 
     constexpr money & operator++() noexcept
     {
@@ -250,7 +250,7 @@ namespace io1
   }
   inline std::istream & operator>>(std::istream & stream, io1::money & val)
   {
-    io1::money::value_type amount;
+    io1::money::value_type amount; // NOLINT(cppcoreguidelines-init-variables) value is used once we have confirmation that it has been initialized
     stream >> amount;
     if (stream) { val = io1::money(amount); } // strong guarantee
     return stream;
