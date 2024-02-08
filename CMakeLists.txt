@@ -20,7 +20,7 @@ include(GNUInstallDirs)
 add_library(${PROJECT_NAME} INTERFACE include/io1/money.hpp)
 target_include_directories(
   ${PROJECT_NAME}
-  INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
 
@@ -39,16 +39,16 @@ write_basic_package_version_file(
 
 configure_package_config_file(
   "${PROJECT_SOURCE_DIR}/cmake/config.cmake.in" "${PROJECT_NAME}Config.cmake"
-  INSTALL_DESTINATION ${CMAKE_INSTALL_DATADIR}/io1/cmake)
+  INSTALL_DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/cmake)
 
 install(
   EXPORT ${PROJECT_NAME}
   NAMESPACE io1::
-  DESTINATION ${CMAKE_INSTALL_DATADIR}/io1/cmake)
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/cmake)
 
 install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
               "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-        DESTINATION ${CMAKE_INSTALL_DATADIR}/io1/cmake)
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/cmake)
 
 if(IO1_WITH_TESTS)
   include(CTest)
@@ -63,5 +63,5 @@ if(IO1_WITH_TESTS)
     NAME test_${PROJECT_NAME}
     COMMAND test_${PROJECT_NAME} --reporters=junit
             --out=junit_test_${PROJECT_NAME}.xml
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 endif()
