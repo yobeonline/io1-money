@@ -1,0 +1,66 @@
+name: install
+on: [push]
+
+jobs:
+  install:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        config: [Release, Debug]
+        os: [ubuntu-latest, windows-latest]
+        compiler: [gcc, clang, msvc]
+        exclude:
+          - os: windows-latest
+            compiler: gcc
+          - os: windows-latest
+            compiler: clang
+          - os: ubuntu-latest
+            compiler: msvc
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get latest cmake
+        uses: lukka/get-cmake@latest
+        
+      - name: Configure
+        shell: cmake -P {0}
+        run: |
+          if ("${{ matrix.compiler }}" STREQUAL "msvc")
+            set(vcpkg_triplet x64-windows)
+            set(compiler_flags "/EHsc /W4")
+          else()
+            set(vcpkg_triplet x64-linux)
+            set(compiler_flags "-Wall -Wextra -Wpedantic -Wconversion -Wshadow")
+            if ("${{ matrix.compiler }}" STREQUAL "gcc")
+              set(ENV{CC} "gcc-13")
+              set(ENV{CXX} "g++-13")
+            else()
+              set(ENV{CC} "clang-15")
+              set(ENV{CXX} "clang++-15")
+            endif()
+          endif()
+          execute_process(
+            COMMAND cmake
+              -S .
+              -B build
+              -D IO1_WITH_TESTS=OFF
+              -D CMAKE_BUILD_TYPE=${{ matrix.config }}
+              -D "CMAKE_CXX_FLAGS=${compiler_flags}"
+            RESULT_VARIABLE result
+          )
+          if (NOT result EQUAL 0)
+            message(FATAL_ERROR "Bad exit status")
+          endif()
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.config }} --parallel --target io1-money
+
+      - name: Install
+        run: cmake --install build --prefix install --config ${{ matrix.config }}
+
+      - name: Test
+        run: |
+          pushd test-install
+          cmake -S . -B build -DIO1-MONEY_DIR=../install  -D CMAKE_BUILD_TYPE=${{ matrix.config }}
+          cmake --build build --config ${{ matrix.config }} --parallel
+          popd
