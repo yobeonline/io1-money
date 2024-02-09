@@ -11,10 +11,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Lint
-        run: |
-          mkdir lint
-          echo "#include \"io1/money.hpp\"" > lint/lint.cpp
-          clang-tidy-15 lint/lint.cpp --export-fixes=clang-fixes.yaml --header-filter=io1/* -- -Iinclude -std=c++20
+        run: clang-tidy-15 include/io1/money.hpp --export-fixes=clang-fixes.yaml -- -std=c++20
 
       - name: Process clang-tidy warnings
         uses: asarium/clang-tidy-action@v1
