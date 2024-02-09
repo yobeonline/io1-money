@@ -59,8 +59,8 @@ jobs:
         run: cmake --install build --prefix install --config ${{ matrix.config }}
 
       - name: Test
+        shell: cmake -P {0}
         run: |
-          pushd test-install
-          cmake -S . -B build -DIO1-MONEY_DIR=../install  -D CMAKE_BUILD_TYPE=${{ matrix.config }}
-          cmake --build build --config ${{ matrix.config }} --parallel
-          popd
+          set (io1-money_DIR install)
+          find_package(io1-money REQUIRED)
+          
