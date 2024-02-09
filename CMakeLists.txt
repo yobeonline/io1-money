@@ -51,17 +51,5 @@ install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
         DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/cmake)
 
 if(IO1_WITH_TESTS)
-  include(CTest)
-
-  find_package(doctest CONFIG REQUIRED)
-
-  add_executable(test_${PROJECT_NAME} test/test_money.cpp test/tutorial.cpp)
-  target_link_libraries(test_${PROJECT_NAME} PRIVATE io1::money
-                                                     doctest::doctest)
-
-  add_test(
-    NAME test_${PROJECT_NAME}
-    COMMAND test_${PROJECT_NAME} --reporters=junit
-            --out=junit_test_${PROJECT_NAME}.xml
-    WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+  add_subdirectory(test)
 endif()

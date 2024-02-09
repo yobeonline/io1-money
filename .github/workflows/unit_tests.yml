@@ -62,4 +62,4 @@ jobs:
       - name: Publish test report
         uses: mikepenz/action-junit-report@v3
         with:
-          report_paths: 'build/junit_*.xml'
+          report_paths: 'build/test/junit_*.xml'
