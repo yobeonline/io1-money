@@ -61,6 +61,6 @@ jobs:
       - name: Test
         shell: cmake -P {0}
         run: |
-          set (io1-money_DIR install)
+          set (io1-money_DIR "install/share/io1-money/cmake")
           find_package(io1-money REQUIRED)
           
