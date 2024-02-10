@@ -67,7 +67,26 @@ jobs:
       - name: Install
         run: cmake --install build --prefix install --config ${{ matrix.config }}
 
-      - name: Use install
+      - name: Configure with install
+        shell: cmake -P {0}
         run: |
-          cmake -B install_build -S test -D CMAKE_BUILD_TYPE=${{ matrix.config }} -D "io1-money_DIR=../install/share/io1-money/cmake"
-          cmake --build install_build --config ${{ matrix.config }} --parallel
+          if ("${{ matrix.compiler }}" STREQUAL "gcc")
+            set(ENV{CC} "gcc-13")
+            set(ENV{CXX} "g++-13")
+          else()
+            set(ENV{CC} "clang-15")
+            set(ENV{CXX} "clang++-15")
+          endif()
+          execute_process(
+            COMMAND cmake
+              -S test
+              -B install_build
+              -D CMAKE_BUILD_TYPE=${{ matrix.config }}
+              -D "io1-money_DIR=../install/share/io1-money/cmake"
+            RESULT_VARIABLE result
+          )
+          if (NOT result EQUAL 0)
+            message(FATAL_ERROR "Bad exit status")
+          endif()
+      - name: Build with install
+        run: cmake --build install_build --config ${{ matrix.config }} --parallel
