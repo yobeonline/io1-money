@@ -69,5 +69,5 @@ jobs:
 
       - name: Use install
         run: |
-          cmake -B install_build -S test -D CMAKE_BUILD_TYPE=${{ matrix.config }} -D "io1_money_DIR=install/share/io1-money/cmake"
+          cmake -B install_build -S test -D CMAKE_BUILD_TYPE=${{ matrix.config }} -D "io1-money_DIR=../install/share/io1-money/cmake"
           cmake --build install_build --config ${{ matrix.config }} --parallel
