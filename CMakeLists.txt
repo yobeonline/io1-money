@@ -39,16 +39,16 @@ write_basic_package_version_file(
 
 configure_package_config_file(
   "${PROJECT_SOURCE_DIR}/cmake/config.cmake.in" "${PROJECT_NAME}Config.cmake"
-  INSTALL_DESTINATION ${CMAKE_INSTALL_DATADIR}/io1/cmake)
+  INSTALL_DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/cmake)
 
 install(
   EXPORT ${PROJECT_NAME}
   NAMESPACE io1::
-  DESTINATION ${CMAKE_INSTALL_DATADIR}/io1/cmake)
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/cmake)
 
 install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
               "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-        DESTINATION ${CMAKE_INSTALL_DATADIR}/io1/cmake)
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/cmake)
 
 if(IO1_WITH_TESTS)
   include(CTest)
