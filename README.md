@@ -2,6 +2,22 @@
 
 `io1::money` is a header-only c++ 20 class that holds money amounts in the range  -9,223,372,036,854,775,808  +9,223,372,036,854,775,807. Amounts are intended to be expressed in the lowest subdivision allowed by a currency (eg. cents for USD), hence the integer base type. Localized formatting is supported by the standard `moneypunct`facet. Arithmetic operations involving `io1::money` instances and integers are exact (yet subject to overflow). Arithmetic operations with floats are rounded towards the nearest even integer (aka banker’s rounding).
 
+# Install
+
+Configure and install with `cmake`:
+
+```shell
+cmake -B build WITH_TESTS=OFF
+cmake --install build --prefix <install_dir>
+```
+
+Call `find_package` from your `CMakeLists.txt` file:
+
+```cmake
+find_package(io1 REQUIRED COMPONENTS money)
+target_link_libraries(<target> PRIVATE io1::money)
+```
+
 # Rationale
 
 An amount like \$0.10 cannot be represented by a float because of the involved loss of precision that would make the following operation unbalanced: \$1.00≠\$0.10+\$0.10… (ten times). Besides, not all currencies have a 1/100 subdivision[^dinar] or even a decimal subdivision[^ougiya]. As a result, money amounts are stored as plain integer values and formatting them with the correct currency / sub-currency format is left to the user of the class. For example, the value 12550 stored in a `io1::money` instance may be formatted as $125.50, 12.550 DT or 2510 UM depending on the locale context. The `io1` namespace provides overloads to `std::put_money` and `std::get_money` into order to format `io1::money` instances with the currently imbued `std::moneypunct` facet.

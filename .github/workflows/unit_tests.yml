@@ -82,7 +82,7 @@ jobs:
               -S test
               -B install_build
               -D CMAKE_BUILD_TYPE=${{ matrix.config }}
-              -D "io1-money_DIR=../install/share/io1-money/cmake"
+              -D "io1_DIR=../install/share/io1/cmake"
             RESULT_VARIABLE result
           )
           if (NOT result EQUAL 0)
