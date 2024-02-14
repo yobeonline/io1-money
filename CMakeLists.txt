@@ -7,8 +7,10 @@ if(IO1_WITH_TESTS)
   list(APPEND VCPKG_MANIFEST_FEATURES "tests")
 endif()
 
+set(IO1_PROJECT_NAME "money")
+
 project(
-  io1-money
+  io1-${IO1_PROJECT_NAME}
   VERSION 0.1.0
   DESCRIPTION
     "A class to store money amounts for personal accounting applications."
@@ -24,31 +26,34 @@ target_include_directories(
             $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
 
-add_library(io1::money ALIAS ${PROJECT_NAME})
+set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_NAME
+                                                 ${IO1_PROJECT_NAME})
+
+add_library(io1::${IO1_PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME})
+
+install(
+  EXPORT ${PROJECT_NAME}
+  NAMESPACE io1::
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/io1/cmake)
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/io1
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-  "${PROJECT_NAME}ConfigVersion.cmake"
+  "io1ConfigVersion.cmake"
   VERSION ${PROJECT_VERSION}
   COMPATIBILITY SameMajorVersion ARCH_INDEPENDENT)
 
 configure_package_config_file(
-  "${PROJECT_SOURCE_DIR}/cmake/config.cmake.in" "${PROJECT_NAME}Config.cmake"
-  INSTALL_DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/cmake)
+  "${PROJECT_SOURCE_DIR}/cmake/config.cmake.in" "io1Config.cmake"
+  INSTALL_DESTINATION ${CMAKE_INSTALL_DATADIR}/io1/cmake)
 
-install(
-  EXPORT ${PROJECT_NAME}
-  NAMESPACE io1::
-  DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/cmake)
-
-install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-              "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-        DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/cmake)
+install(FILES "${PROJECT_BINARY_DIR}/io1ConfigVersion.cmake"
+              "${PROJECT_BINARY_DIR}/io1Config.cmake"
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/io1/cmake)
 
 if(IO1_WITH_TESTS)
   include(CTest)
