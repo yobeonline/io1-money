@@ -22,36 +22,29 @@ jobs:
       - name: Get latest cmake
         uses: lukka/get-cmake@latest
         
-      - name: Configure
+      - name: Set environment
         shell: cmake -P {0}
         run: |
           if ("${{ matrix.compiler }}" STREQUAL "msvc")
-            set(vcpkg_triplet x64-windows)
-            set(compiler_flags "/EHsc /W4")
+            file(APPEND $ENV{GITHUB_ENV} "VCPKG_TARGET_TRIPLET=x64-windows\n")
+            file(APPEND $ENV{GITHUB_ENV} "CXXFLAGS=/EHsc /W4\n")
+            file(APPEND $ENV{GITHUB_ENV} "CFLAGS=/EHsc /W4\n")
           else()
-            set(vcpkg_triplet x64-linux)
-            set(compiler_flags "-Wall -Wextra -Wpedantic -Wconversion -Wshadow")
+            file(APPEND $ENV{GITHUB_ENV} "VCPKG_TARGET_TRIPLET=x64-linux\n")
+            file(APPEND $ENV{GITHUB_ENV} "CXXFLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow\n")
+            file(APPEND $ENV{GITHUB_ENV} "CFLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow\n")
             if ("${{ matrix.compiler }}" STREQUAL "gcc")
-              set(ENV{CC} "gcc-13")
-              set(ENV{CXX} "g++-13")
+              file(APPEND $ENV{GITHUB_ENV} "CC=gcc-13\n")
+              file(APPEND $ENV{GITHUB_ENV} "CXX=g++-13\n")
             else()
-              set(ENV{CC} "clang-15")
-              set(ENV{CXX} "clang++-15")
+              file(APPEND $ENV{GITHUB_ENV} "CC=clang-15\n")
+              file(APPEND $ENV{GITHUB_ENV} "CXX=clang++-15\n")
             endif()
           endif()
-          execute_process(
-            COMMAND cmake
-              -S .
-              -B build
-              -D CMAKE_BUILD_TYPE=${{ matrix.config }}
-              -D VCPKG_TARGET_TRIPLET=${vcpkg_triplet}
-              -D "CMAKE_CXX_FLAGS=${compiler_flags}"
-              --toolchain "$ENV{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
-            RESULT_VARIABLE result
-          )
-          if (NOT result EQUAL 0)
-            message(FATAL_ERROR "Bad exit status")
-          endif()
+          file(APPEND $ENV{GITHUB_ENV} "CMAKE_TOOLCHAIN_FILE=$ENV{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake\n")
+
+      - name: Configure
+        run: cmake -S . -B build -D CMAKE_BUILD_TYPE=${{ matrix.config }}
 
       - name: Build
         run: cmake --build build --config ${{ matrix.config }} --parallel
@@ -68,25 +61,7 @@ jobs:
         run: cmake --install build --prefix install --config ${{ matrix.config }}
 
       - name: Configure with install
-        shell: cmake -P {0}
-        run: |
-          if ("${{ matrix.compiler }}" STREQUAL "gcc")
-            set(ENV{CC} "gcc-13")
-            set(ENV{CXX} "g++-13")
-          else()
-            set(ENV{CC} "clang-15")
-            set(ENV{CXX} "clang++-15")
-          endif()
-          execute_process(
-            COMMAND cmake
-              -S test
-              -B install_build
-              -D CMAKE_BUILD_TYPE=${{ matrix.config }}
-              -D "io1_DIR=../install/share/io1/cmake"
-            RESULT_VARIABLE result
-          )
-          if (NOT result EQUAL 0)
-            message(FATAL_ERROR "Bad exit status")
-          endif()
+        run: cmake -S test -B install_build -D CMAKE_BUILD_TYPE=${{ matrix.config }} -D "io1_DIR=../install/share/io1/cmake"
+
       - name: Build with install
         run: cmake --build install_build --config ${{ matrix.config }} --parallel
