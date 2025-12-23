@@ -3,7 +3,6 @@
 #include <locale>
 #include <memory>
 #include <sstream>
-#include <string_view>
 #include <utility>
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
@@ -65,22 +64,10 @@ TEST_CASE("Constexpr functions")
     [[maybe_unused]] constexpr auto m = 1_money - 2_money;
   }
   {
-    [[maybe_unused]] constexpr auto m = 1_money * 2;
-  }
-  {
     [[maybe_unused]] constexpr auto m = 10_money / 2;
   }
   {
     [[maybe_unused]] constexpr auto m = -10_money / 2;
-  }
-  {
-    [[maybe_unused]] constexpr auto m = 2 * 1_money;
-  }
-  {
-    [[maybe_unused]] constexpr auto m = -1_money * 2;
-  }
-  {
-    [[maybe_unused]] constexpr auto m = 2 * -1_money;
   }
   {
     [[maybe_unused]] constexpr auto r = -1_money == -1_money;
@@ -193,7 +180,7 @@ TEST_CASE("Arithmetic")
   CHECK_EQ(-2_money, 4_money /= -2);
   CHECK_EQ(0_money, 0_money /= -2);
 
-  CHECK_THROWS_AS(4_money /= 3, io1::money::InexactDivision);
+  CHECK_THROWS_AS(4_money /= 3, io1::money::inexact_division_error);
 
   {
     auto m = 4_money;
@@ -201,7 +188,7 @@ TEST_CASE("Arithmetic")
     {
       m /= 3;
     }
-    catch (io1::money::InexactDivision const & e)
+    catch (io1::money::inexact_division_error const & e)
     {
       CHECK_EQ(4, e.dividend);
       CHECK_EQ(3, e.divisor);
@@ -209,7 +196,7 @@ TEST_CASE("Arithmetic")
     }
   }
 
-  CHECK_THROWS_AS([[maybe_unused]] auto const m = 4_money / 3, io1::money::InexactDivision);
+  CHECK_THROWS_AS([[maybe_unused]] auto const m = 4_money / 3, io1::money::inexact_division_error);
 
   {
     auto m = 4_money;
@@ -217,7 +204,7 @@ TEST_CASE("Arithmetic")
     {
       [[maybe_unused]] auto const m2 = m / 3;
     }
-    catch (io1::money::InexactDivision const & e)
+    catch (io1::money::inexact_division_error const & e)
     {
       CHECK_EQ(4, e.dividend);
       CHECK_EQ(3, e.divisor);

@@ -110,7 +110,7 @@ io1::money & io1::money::operator/=(long double f) noexcept; (7)
 
 (4)    Multiplication by an integer assignment. Replace the amount with the result of the multiplication of the previous amount by `i`. Overflow has undefined behavior.
 
-(5)    Division by an integer assignment. Replace the amount with the result of the division of the previous amount by `i`. If the result is not exact, the operator throws an instance of `io1::money::InexactDivision` and provides the strong exception guarantee (see example below). Dividing by zero has undefined behavior.
+(5)    Division by an integer assignment. Replace the amount with the result of the division of the previous amount by `i`. If the result is not exact, the operator throws an instance of `io1::money::inexact_division_error` and provides the strong exception guarantee (see example below). Dividing by zero has undefined behavior.
 
 (6, 7)    Multiplication and division by a float. Replace the amount with the result of the multiplication / division of the previous amount by `f`. Overflow and division by zero have undefined behavior. Inexact results are rounded to nearest even integer. These operators assert that the current floating-point rounding mode is still (or has been restored to) the default value of `FE_TONEAREST`.
 
@@ -122,7 +122,7 @@ Multiplication and division assignments from `io1::money` instances are not prov
 io1::money m = 10_money;
 m /= 2; // ok, the result is 5_money
 try { m /= 2; }
-catch (io1::money::InexactDivision const & e)
+catch (io1::money::inexact_division_error const & e)
 {
     std::cerr << "Dividing " << e.dividend << " by " << e.divisor << " is not exact.\n";
     std::cout << "m still holds: " << m << '\n'; // 5_money
@@ -263,7 +263,7 @@ USD  12.35
 ## Exceptions
 
 ```cpp
-struct [[nodiscard]] io1::money::InexactDivision
+struct [[nodiscard]] io1::money::inexact_division_error
 {
     io1::money::value_type dividend;
     io1::money::value_type divisor;

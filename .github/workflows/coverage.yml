@@ -36,7 +36,7 @@ jobs:
           mkdir build/html
           gcovr --gcov-executable /usr/bin/gcov-13 --filter include/io1/money.hpp --exclude-unreachable-branches --exclude-lines-by-pattern '.*assert.*' --print-summary -x build/coverage.xml --html-details build/html/index.html --html-details-syntax-highlighting -r . build
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: detailed coverage report
           path: build/html
