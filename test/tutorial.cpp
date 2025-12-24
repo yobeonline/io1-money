@@ -18,8 +18,8 @@ private:
   std::string do_positive_sign() const override { return ""; };
   std::string do_negative_sign() const override { return "-"; };
   int do_frac_digits() const override { return 2; };
-  pattern do_pos_format() const override { return {symbol, sign, value}; };
-  pattern do_neg_format() const override { return {symbol, sign, value}; };
+  pattern do_pos_format() const override { return {symbol, sign, value, none}; };
+  pattern do_neg_format() const override { return {symbol, sign, value, none}; };
 };
 
 [[nodiscard]] auto compute_installment_plan(io1::money price, std::size_t count) noexcept
