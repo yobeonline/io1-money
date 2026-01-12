@@ -43,6 +43,9 @@ jobs:
           endif()
           file(APPEND $ENV{GITHUB_ENV} "CMAKE_TOOLCHAIN_FILE=$ENV{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake\n")
 
+      - name: Trying to restore vcpkg dependencies
+        uses: lukka/run-vcpkg@v10
+
       - name: Configure
         run: cmake -S . -B build -D CMAKE_BUILD_TYPE=${{ matrix.config }}
 
